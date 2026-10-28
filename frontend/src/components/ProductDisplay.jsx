@@ -360,7 +360,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaShoppingCart, FaExpand, FaCheck, FaAngleUp, FaAngleDown, FaAngleLeft, FaAngleRight, FaTimes } from 'react-icons/fa';
+import { FaExpand, FaAngleUp, FaAngleDown, FaAngleLeft, FaAngleRight, FaTimes } from 'react-icons/fa';
 
 import Reviews from "./random/Reviews";
 import AlertMessage from "./Alert";
@@ -373,7 +373,6 @@ const ProductDisplay = () => {
 
     const [product, setProduct] = useState(null);
     const [selectedColor, setSelectedColor] = useState(null);
-    const [quantity, setQuantity] = useState(1);
     const [isFullScreenImage, setIsFullScreenImage] = useState(false);
 
     const [loading, setLoading] = useState(true);

@@ -72,6 +72,7 @@ export const TextScroll = ({
 
   return (
     <section
+      className={cn("w-full", className)}
       style={{
         background: "var(--prada-black)",
         color: "var(--prada-white)",

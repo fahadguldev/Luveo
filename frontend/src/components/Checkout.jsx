@@ -14,15 +14,15 @@ const validateForm = (data) => {
     } else if (!/^\S+@\S+\.\S+$/.test(data.email)) {
         errors.email = 'Email is invalid';
     }
-    // Normalize the phone number
-    if (data.phone.startsWith('0')) {
+    // Normalize local phone number if entered with leading 0
+    if (data.phone.startsWith('0') && data.phone.length === 11) {
         data.phone = data.phone.replace(/^0/, '+92');
     }
-    // Validation
+    // Validation: allow international format (+...) or standard numeric with 7-16 digits
     if (!data.phone.trim()) {
         errors.phone = 'Phone number is required';
-    } else if (!/^\+92[0-9\s-()]{7,}$/.test(data.phone)) {
-        errors.phone = 'Please enter a valid phone number starting with +92';
+    } else if (!/^\+?[0-9\s-()]{7,16}$/.test(data.phone.trim())) {
+        errors.phone = 'Please enter a valid phone number';
     }
     if (!data.address.trim()) errors.address = 'Address is required';
     if (!data.city.trim()) errors.city = 'City is required';
@@ -79,14 +79,14 @@ const PaymentInfoCard = () => {
         if (userData) {
             setFormData(prevData => ({
                 ...prevData,
-                name: '',
-                email: '',
-                phone: userData.phone || '',
-                address: userData.address || '',
-                city: userData.city || '',
-                province: userData.province || '',
-                postalCode: userData.postalCode || '',
-                country: userData.country || ''
+                name: userData.name || prevData.name || '',
+                email: userData.email || prevData.email || '',
+                phone: userData.phone || prevData.phone || '',
+                address: userData.address || prevData.address || '',
+                city: userData.city || prevData.city || '',
+                province: userData.province || prevData.province || '',
+                postalCode: userData.postalCode || prevData.postalCode || '',
+                country: userData.country || prevData.country || ''
             }));
         }
     }, [userData]);

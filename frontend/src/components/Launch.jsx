@@ -1,16 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import {  FaClock, } from 'react-icons/fa'; // Font Awesome
+import { useState, useEffect } from 'react';
+import { FaClock } from 'react-icons/fa';
 import { FiGift } from "react-icons/fi";
 
-
-
-
-
-
-
 export default function WelcomePage() {
-    const [email, setEmail] = useState('');
-    const [subscribed, setSubscribed] = useState(false);
     const [countdown, setCountdown] = useState({
         days: 0,
         hours: 0,
@@ -18,8 +10,8 @@ export default function WelcomePage() {
         seconds: 0
     });
 
-    // Launch date: April 4, 2025
-    const launchDate = new Date('2025-04-04T00:00:00').getTime();
+    // Launch date: April 4, 2026
+    const launchDate = new Date('2026-04-04T00:00:00').getTime();
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -40,16 +32,7 @@ export default function WelcomePage() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, []);
-
-    const handleSubscribe = (e) => {
-        e.preventDefault();
-        if (email.trim() && /\S+@\S+\.\S+/.test(email)) {
-            setSubscribed(true);
-            // In a real application, you'd send this to your backend
-            console.log('Subscribed email:', email);
-        }
-    };
+    }, [launchDate]);
 
     const CountdownBlock = ({ value, label, className }) => (
         <div className={`flex flex-col items-center border-2 border-white text-white rounded-lg shadow-lg ${className}`}>
@@ -57,7 +40,6 @@ export default function WelcomePage() {
             <span className="text-sm">{label}</span>
         </div>
     );
-
 
     return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-black text-white text-center px-4 sm:px-6 overflow-hidden">
@@ -77,7 +59,7 @@ export default function WelcomePage() {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl opacity-90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-                Get ready for a groundbreaking experience. We're working hard to bring you something truly special.
+                Get ready for a groundbreaking experience. We&apos;re working hard to bring you something truly special.
             </p>
 
             {/* Countdown Timer */}

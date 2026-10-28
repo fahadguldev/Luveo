@@ -1,18 +1,26 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import ProductCard from './ProductCard';
 
 // AllProducts Component - Enhanced
 const AllProducts = () => {
     const { category } = useParams();
+    const [searchParams] = useSearchParams();
+    const urlSearch = searchParams.get('search');
+
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // const [products,setProducts]
 
     // Filters and sorting
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTerm] = useState(urlSearch || "");
+
+    useEffect(() => {
+        if (typeof urlSearch === 'string') {
+            setSearchTerm(urlSearch);
+        }
+    }, [urlSearch]);
     const [selectedCategory, setSelectedCategory] = useState("");
     const [sortBy, setSortBy] = useState("newest");
     const [categories, setCategories] = useState([]);

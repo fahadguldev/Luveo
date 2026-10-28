@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios'
 import AdminBackLink from './AdminBackLink';
 
@@ -24,7 +24,7 @@ const Analytics = () => {
                 }
 
                 const data = await response.json();
-                setData(data.products);
+                setData(Array.isArray(data.products) ? data.products : []);
                 setError(null);
             } catch (error) {
                 console.error("Error fetching products:", error);
@@ -39,33 +39,35 @@ const Analytics = () => {
     }, []);
 
     // Filter and sort data
-    const filteredData = data
-        .filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredData = (data || [])
+        .filter(product => product?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
         .sort((a, b) => {
             if (sortOrder === 'asc') {
-                return a[sortBy] > b[sortBy] ? 1 : -1;
+                return (a[sortBy] || 0) > (b[sortBy] || 0) ? 1 : -1;
             } else {
-                return a[sortBy] < b[sortBy] ? 1 : -1;
+                return (a[sortBy] || 0) < (b[sortBy] || 0) ? 1 : -1;
             }
         });
 
-    // For statistics
-    // const totalVisits = data.reduce((sum, product) => sum + (product.visitCount || 0), 0);
     const getTotalVisits = async () => {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/globalVisitCount`)
-        console.log(response.data.message)
-        setTotalVisits(response.data.message.globalVisitCount)
-    }
-    // totalVisits()
-    useEffect(() => {
-        getTotalVisits()
-    }, [])
-    const totalProductVisits = data.reduce((total, product) => total + product.visitCount, 0);
-    const avgVisits = data.length ? (totalProductVisits / data.length).toFixed(1) : 0;
-    // const topProduct = data.length ? [...data].sort((a, b) => b.visitCount - a.visitCount)[0] : null;
-    const topProducts = data.length ? [...data].sort((a, b) => b.visitCount - a.visitCount).slice(0, 3) : [];
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/globalVisitCount`);
+            setTotalVisits(response.data?.message?.globalVisitCount || 0);
+        } catch {
+            setTotalVisits(0);
+        }
+    };
 
-    const productVisitRate = (totalProductVisits / totalVisits) * 100
+    useEffect(() => {
+        getTotalVisits();
+    }, []);
+
+    const totalProductVisits = (data || []).reduce((total, product) => total + (product?.visitCount || 0), 0);
+    const avgVisits = data.length ? (totalProductVisits / data.length).toFixed(1) : 0;
+    const topProducts = data.length ? [...data].sort((a, b) => (b.visitCount || 0) - (a.visitCount || 0)).slice(0, 3) : [];
+
+    const visitsCount = Number(totalVisits) || 0;
+    const productVisitRate = visitsCount > 0 ? ((totalProductVisits / visitsCount) * 100).toFixed(1) : 0;
 
 
     return (

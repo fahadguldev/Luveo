@@ -1,7 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import AdminBackLink from './AdminBackLink';
+import { getAuthHeaders } from '../lib/auth.js';
+
+const NOTIFICATION_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
 const AdminOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -12,14 +16,88 @@ const AdminOrdersPage = () => {
     const [filterStatus, setFilterStatus] = useState('pending');
     const [statusMessages, setStatusMessages] = useState({});
     const [cancelState, setCancelState] = useState({}); // { [orderId]: { loading: bool, message: string, error: bool } }
+    const [recentOrderId, setRecentOrderId] = useState(null);
+    const [liveToast, setLiveToast] = useState(null);
+    const [isSocketConnected, setIsSocketConnected] = useState(false);
+    const [audioMuted, setAudioMuted] = useState(false);
+    const audioRef = useRef(null);
+
+    // Real-time WebSocket connection using Socket.io
+    useEffect(() => {
+        audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
+        audioRef.current.preload = 'auto';
+
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const socket = io(backendUrl, {
+            transports: ['websocket', 'polling'],
+            withCredentials: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+        });
+
+        socket.on('connect', () => {
+            setIsSocketConnected(true);
+            socket.emit('join_admin_orders');
+        });
+
+        socket.on('disconnect', () => {
+            setIsSocketConnected(false);
+        });
+
+        socket.on('new_order', (newOrder) => {
+            if (!newOrder) return;
+            const newId = newOrder._id || newOrder.id;
+
+            // Prepend new order dynamically without full page reload
+            setOrders((prevOrders) => {
+                const exists = prevOrders.some((o) => (o._id || o.id) === newId);
+                if (exists) return prevOrders;
+                return [newOrder, ...prevOrders];
+            });
+
+            // Trigger visual flash highlight and toast
+            setRecentOrderId(newId);
+            setLiveToast({
+                id: newId,
+                name: newOrder.name || newOrder.customer?.name || 'Customer',
+                total: newOrder.orderTotal || newOrder.amount_total || newOrder.amountTotal || '0',
+            });
+
+            // Play notification sound
+            if (!audioMuted && audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play().catch((err) => {
+                    console.warn('Audio playback restricted by browser policy:', err.message);
+                });
+            }
+
+            // Remove visual highlight after 5 seconds
+            setTimeout(() => {
+                setRecentOrderId((prev) => (prev === newId ? null : prev));
+            }, 5000);
+
+            // Hide toast after 6 seconds
+            setTimeout(() => {
+                setLiveToast((prev) => (prev?.id === newId ? null : prev));
+            }, 6000);
+        });
+
+        // Clean up socket listeners and disconnect cleanly on unmount to prevent leaks
+        return () => {
+            socket.off('new_order');
+            socket.disconnect();
+        };
+    }, [audioMuted]);
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`);
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`, {
+                    headers: getAuthHeaders(),
+                    withCredentials: true
+                });
                 setOrders(response.data.orders);
-                console.log(response.data);
                 setError(null);
                 setLoading(false);
             } catch (err) {
@@ -110,6 +188,9 @@ const AdminOrdersPage = () => {
             const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/analytics/update-order-status`, {
                 orderID: orderId,
                 orderStatus: newStatus,
+            }, {
+                headers: getAuthHeaders(),
+                withCredentials: true
             });
 
             setStatusMessages(prev => ({
@@ -147,7 +228,10 @@ const AdminOrdersPage = () => {
     const cancelOrder = async (orderId) => {
         setCancelState(prev => ({ ...prev, [orderId]: { loading: true, message: null, error: false } }));
         try {
-            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/admin/cancel-order/${orderId}`);
+            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/admin/cancel-order/${orderId}`, {
+                headers: getAuthHeaders(),
+                withCredentials: true
+            });
             setOrders(prev => prev.filter(o => o._id !== orderId));
             setCancelState(prev => ({ ...prev, [orderId]: { loading: false, message: 'Order cancelled', error: false } }));
         } catch {
@@ -185,7 +269,51 @@ const AdminOrdersPage = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <AdminBackLink />
-            <h1 className="text-3xl font-bold mb-6">Order Management</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
+                    <p className="text-xs text-gray-500 mt-1">Real-time live push updates via MongoDB Atlas Change Streams</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                        isSocketConnected 
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                            : 'bg-rose-50 text-rose-700 border border-rose-200'
+                    }`}>
+                        <span className={`w-2 h-2 rounded-full ${isSocketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                        {isSocketConnected ? 'Live Connected' : 'Disconnected'}
+                    </span>
+                    <button
+                        onClick={() => setAudioMuted(!audioMuted)}
+                        type="button"
+                        className="px-3 py-1 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 transition text-gray-700"
+                        title="Toggle notification sound"
+                    >
+                        {audioMuted ? '🔕 Sound Off' : '🔔 Sound On'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Live Order Arrival Toast Banner */}
+            {liveToast && (
+                <div className="mb-6 p-4 bg-emerald-600 text-white rounded-lg shadow-md flex items-center justify-between animate-bounce">
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl">🛍️</span>
+                        <div>
+                            <p className="font-bold text-sm">New Order Received!</p>
+                            <p className="text-xs text-emerald-100">
+                                {liveToast.name} placed an order of RS {liveToast.total}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setLiveToast(null)}
+                        className="text-white hover:text-emerald-200 font-bold text-lg"
+                    >
+                        &times;
+                    </button>
+                </div>
+            )}
 
             {/* Filters and Search */}
             <div className="mb-6 flex flex-col md:flex-row gap-4">
@@ -249,12 +377,21 @@ const AdminOrdersPage = () => {
                         {filteredOrders.length > 0 ? (
                             filteredOrders.map((order) => (
                                 <tr
-                                    key={order._id}
-                                    className="hover:bg-gray-50"
+                                    key={order._id || order.id}
+                                    className={`transition-colors duration-1000 ${
+                                        (order._id || order.id) === recentOrderId
+                                            ? 'bg-amber-100/90 font-medium text-amber-950 ring-2 ring-amber-400 ring-inset'
+                                            : 'hover:bg-gray-50'
+                                    }`}
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
-                                            {formatDate(order.orderDate)}
+                                            <span>{formatDate(order.orderDate)}</span>
+                                            {(order._id || order.id) === recentOrderId && (
+                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                                                    NEW
+                                                </span>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

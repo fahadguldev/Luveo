@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { getAuthHeaders } from '../lib/auth.js';
 
 const Admin = () => {
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -47,7 +48,12 @@ const Admin = () => {
         // Helper that always returns a safe object even on empty/404
         const safeFetch = async (url, fallback) => {
             try {
-                const res = await fetch(url);
+                const res = await fetch(url, {
+                    headers: {
+                        ...getAuthHeaders(),
+                    },
+                    credentials: 'include'
+                });
                 if (!res.ok) {
                     console.warn(`Non-200 from ${url}:`, res.status);
                     return fallback;
@@ -76,7 +82,7 @@ const Admin = () => {
                 const status = order?.orderStatus?.toLowerCase();
                 if (status === "pending") pending++;
                 else if (status === "packing") packing++;
-                else if (status === "delievered") delievered++;
+                else if (status === "delivered" || status === "delievered") delievered++;
                 else if (status === 'shipped') shipped++;
             });
 

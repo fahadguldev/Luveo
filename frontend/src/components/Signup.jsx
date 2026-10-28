@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const Signup = () => {
-    const { user, loginWithRedirect, isAuthenticated, getAccessTokenSilently, isLoading } = useAuth0();
+    const { user, loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
     const navigate = useNavigate();
     const [signupError, setSignupError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);

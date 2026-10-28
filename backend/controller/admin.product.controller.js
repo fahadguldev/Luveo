@@ -1,3 +1,4 @@
+import fs from 'fs';
 import cloudinary, { cloudinaryConnect } from '../config/cloudinary.js';
 import productModel from '../models/product.model.js';
 import {
@@ -11,11 +12,28 @@ cloudinaryConnect();
 
 const requiredSpecs = ['material', 'dimensions', 'weight', 'careInstructions'];
 
-// Upload an array of files to Cloudinary and return their URLs
+// Upload an array of files to Cloudinary, clean up local files, and return URLs
 const uploadImgsToCloudinary = async (files) => {
-	const uploadPromises = files.map(file => cloudinary.uploader.upload(file.path));
-	const results = await Promise.all(uploadPromises);
-	return results.map(result => result.secure_url);
+	const uploadPromises = (files || []).map(async (file) => {
+		try {
+			const result = await cloudinary.uploader.upload(file.path);
+			return result.secure_url;
+		} finally {
+			// Clean up local temp file to prevent disk leak
+			await fs.promises.unlink(file.path).catch(() => {});
+		}
+	});
+	return await Promise.all(uploadPromises);
+};
+
+// Clean up all local files in req.files if an error occurred before uploading
+const cleanupFiles = async (files) => {
+	if (!files || !Array.isArray(files)) return;
+	for (const file of files) {
+		if (file.path) {
+			await fs.promises.unlink(file.path).catch(() => {});
+		}
+	}
 };
 
 // Group req.files by fieldname pattern colorImages_${index}

@@ -1,24 +1,25 @@
 
-import express from 'express'
+import express from 'express';
 import Stripe from 'stripe';
 import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
 
-import Order from '../models/order.model.js'
+import Order from '../models/order.model.js';
 import AdminMsg from '../models/adminMsg.model.js';
-import Revenue from '../models/revenue.model.js'
+import Revenue from '../models/revenue.model.js';
+import productModel from '../models/product.model.js';
 
-const app = express();
+const router = express.Router();
+
 // Payment route
-app.post("/makePayment", async (req, res) => {
+router.post("/makePayment", async (req, res) => {
     try {
+        if (!process.env.STRIPE_SECRET_KEY) {
+            return res.status(500).json({ error: "Stripe secret key not configured" });
+        }
 
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
         const { products, userId, address } = req.body;
-
-        console.log("Payment request received:", {
-            productsCount: products?.length,
-            userId: userId?.substring(0, 5) + "..." // Log partial ID for privacy
-        });
 
         if (!products || !Array.isArray(products) || products.length === 0) {
             return res.status(400).json({ error: "Invalid product data" });
@@ -28,44 +29,52 @@ app.post("/makePayment", async (req, res) => {
             return res.status(400).json({ error: "User ID is required" });
         }
 
-        // Creating line items with validation
-        const lineItems = products.map((product) => {
-            console.log(`Processing product: ${product.name}, price: ${product.price}`);
+        // Verify genuine prices and stock from MongoDB database (prevent client price manipulation)
+        const lineItems = [];
+        const minimalProducts = [];
 
-            // Validate the price
-            if (!product.price || isNaN(product.price) || product.price <= 0) {
-                throw new Error(`Invalid price for product: ${product.name}`);
+        for (const item of products) {
+            const prodId = item.id || item._id || item.productId;
+            if (!prodId || !mongoose.Types.ObjectId.isValid(prodId)) {
+                return res.status(400).json({ error: `Invalid product ID: ${prodId}` });
             }
 
-            // Get a valid image URL or empty array
+            const dbProduct = await productModel.findById(prodId);
+            if (!dbProduct) {
+                return res.status(404).json({ error: `Product not found: ${prodId}` });
+            }
+
+            const genuinePrice = Number(dbProduct.discountPrice || dbProduct.price);
+            if (isNaN(genuinePrice) || genuinePrice <= 0) {
+                return res.status(400).json({ error: `Invalid price configuration for ${dbProduct.name}` });
+            }
+
+            const quantity = Number(item.quantity) > 0 ? Number(item.quantity) : 1;
+
             let imageUrl = [];
-            if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-                if (typeof product.images[0] === 'string' && product.images[0].startsWith('http')) {
-                    imageUrl = [product.images[0]];
-                }
+            if (dbProduct.colors?.[0]?.images?.[0]) {
+                imageUrl = [dbProduct.colors[0].images[0]];
             }
 
-            return {
+            lineItems.push({
                 price_data: {
                     currency: "AED",
                     product_data: {
-                        name: product.name || "Unnamed Product",
-                        images: imageUrl
+                        name: dbProduct.name,
+                        images: imageUrl,
                     },
-                    unit_amount: Math.round(product.price * 100),
+                    unit_amount: Math.round(genuinePrice * 100),
                 },
-                quantity: 1,
-            };
-        });
+                quantity,
+            });
 
-        console.log("Line items created successfully");
-
-        // Create a minimal version of products for metadata
-        const minimalProducts = products.map(p => ({
-            id: p.id,
-            name: p.name,
-            price: p.price
-        }));
+            minimalProducts.push({
+                id: dbProduct._id,
+                name: dbProduct.name,
+                price: genuinePrice,
+                quantity,
+            });
+        }
 
         // Create a Stripe Checkout session
         const session = await stripe.checkout.sessions.create({
@@ -73,31 +82,30 @@ app.post("/makePayment", async (req, res) => {
             mode: "payment",
             billing_address_collection: 'required',
             shipping_address_collection: {
-                allowed_countries: ['AE'], // Customize this
+                allowed_countries: ['AE'],
             },
             line_items: lineItems,
-            success_url: `${process.env.FRONT_END_URL}/payment/success`,
-            cancel_url: `${process.env.FRONT_END_URL}/payment/cancel`,
+            success_url: `${process.env.FRONT_END_URL || 'http://localhost:5173'}/payment/success`,
+            cancel_url: `${process.env.FRONT_END_URL || 'http://localhost:5173'}/payment/cancel`,
             metadata: {
-                userId: userId,
+                userId: String(userId),
                 products: JSON.stringify(minimalProducts),
-                address: address || "",
+                address: typeof address === 'string' ? address : JSON.stringify(address || {}),
             },
         });
 
-        console.log("Payment session created successfully:", session.id);
         res.json({ sessionId: session.id });
     } catch (error) {
         console.error("Payment Error:", error.message);
-        console.error(error.stack);
         res.status(500).json({
             error: "Failed to create Stripe session",
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
+
 // Webhook route - needs raw body
-app.post("/webhook",
+router.post("/webhook",
     bodyParser.raw({ type: "application/json" }),
     async (req, res) => {
         const sig = req.headers["stripe-signature"];
@@ -207,4 +215,4 @@ app.post("/webhook",
     }
 );
 
-export default app;
+export default router;

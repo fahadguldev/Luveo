@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminBackLink from './AdminBackLink';
+import { getAuthHeaders } from '../lib/auth.js';
 
 const NotificationForm = () => {
     const [message, setMessage] = useState('');
@@ -32,6 +33,7 @@ const NotificationForm = () => {
             const res = await axios.post(`${API_URL}/add-notification`, {
                 message, type, timer
             }, {
+                headers: getAuthHeaders(),
                 withCredentials: true
             });
 
@@ -47,7 +49,10 @@ const NotificationForm = () => {
     // Handle delete
     const handleDelete = async () => {
         try {
-            await axios.delete(`${API_URL}/delete-notification`);
+            await axios.delete(`${API_URL}/delete-notification`, {
+                headers: getAuthHeaders(),
+                withCredentials: true
+            });
             setCurrentNotification(null);
             setMessage('');
             setType('info');

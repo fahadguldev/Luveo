@@ -133,6 +133,7 @@ const UserProfile = () => {
                 { withCredentials: true }
             );
             localStorage.clear();
+            window.dispatchEvent(new Event('auth-change'));
             navigate("/login");
         } catch (error) {
             console.error("Logout failed:", error.response?.data?.message || error.message);
