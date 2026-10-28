@@ -1,106 +1,156 @@
-// import React from "react";
 import { Link } from "react-router-dom";
+import { Shield, Sparkles, Award, Heart, ArrowUpRight } from "lucide-react";
 
-const InstagramIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-    <circle cx="12" cy="12" r="4.5" />
-    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-  </svg>
-);
+const FOOTER_SECTIONS = [
+  {
+    title: "Wallets & Small Goods",
+    links: [
+      { label: "MagFlap™ Magnetic Wallets", href: "/products/magnetic-wallet" },
+      { label: "Artisan Leather Belts", href: "/products/leather-belts" },
+      { label: "Classic Bifold 8-Card", href: "/products/men-wallets" },
+      { label: "Executive Long Wallets", href: "/products/long-wallet" },
+      { label: "Minimalist Card Sleeves", href: "/all-products" },
+    ],
+  },
+  {
+    title: "Leather Atelier",
+    links: [
+      { label: "Full-Grain Sourcing & Hides", href: "/all-products" },
+      { label: "The Patina Evolution Guide", href: "/all-products" },
+      { label: "10-Year Stitch Warranty", href: "/all-products" },
+      { label: "Care & Conditioning Balsams", href: "/all-products" },
+      { label: "Custom Monogramming", href: "/all-products" },
+    ],
+  },
+  {
+    title: "Concierge & Support",
+    links: [
+      { label: "Track Your Dispatch", href: "/profile" },
+      { label: "Open Parcel Delivery Policy", href: "/all-products" },
+      { label: "Refunds & Exchanges", href: "/all-products" },
+      { label: "Atelier FAQ", href: "/all-products" },
+      { label: "WhatsApp Concierge", href: "https://wa.me/923000000000" },
+    ],
+  },
+];
 
-const FacebookIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-  </svg>
-);
-
-const TwitterIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M20.8 5.5c-.7.3-1.5.5-2.3.6a3.6 3.6 0 001.6-2 7 7 0 01-2.3.9 3.5 3.5 0 00-6 2.4c0 .3 0 .6.1.8a10 10 0 01-7.3-3.7 3.5 3.5 0 001.1 4.7c-.5 0-1-.2-1.4-.4a3.5 3.5 0 002.8 3.5 3.6 3.6 0 01-1.4.1 3.5 3.5 0 003.3 2.4A7 7 0 013 18.6a9.9 9.9 0 005.4 1.6c6.5 0 10-5.4 10-10v-.4c.7-.5 1.3-1.1 1.8-1.8z" />
-  </svg>
-);
-
-const NAV = {
-  Support: [
-    { label: "Contact Us", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Refunds & Returns", href: "#" },
-    { label: "Shipping", href: "#" },
-  ],
-  "Quick Links": [
-    { label: "Magnetic wallets", href: "#" },
-    { label: "Ultra Slim", href: "#" },
-    { label: "Premium Long wallets", href: "#" },
-    { label: "Travel", href: "#" },
-    { label: "Accessories", href: "#" },
-    { label: "Briefcases and Luggage", href: "#" },
-    { label: "Shop All", href: "#" },
-  ],
-  "Sales Explore": [],
-};
-
-const Footer = () => {
+export const Footer = () => {
   return (
-    <footer className="bg-transparent">
-      <div className="mx-auto flex max-w-[1240px] flex-col gap-10 px-6 pb-16 pt-12">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1fr_1fr_1fr_1.2fr]">
-          {Object.entries(NAV).map(([title, items]) => (
-            <div key={title} className="text-left">
-              <p className="mb-4 font-sans text-[15px] font-semibold tracking-[0.06em] text-black">
-                {title}
+    <footer className="bg-[#0D0C0B] text-[#FAF8F5] pt-16 pb-12 border-t border-[#262320]">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+        {/* Top Atelier Assurance Bar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-14 border-b border-[#262320]">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 rounded-xl bg-[#1C1A17] border border-[#332E27] text-[#C6833E]">
+              <Shield className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+                100% Full-Grain Hide
+              </h4>
+              <p className="text-xs text-[#8C867C] mt-1">
+                Zero PU, synthetic fillers, or bonded scrap leather.
               </p>
-              <ul className="flex flex-col gap-2">
-                {items.map((item) => (
-                  <li key={item.label} className="text-[15px] font-medium text-[#1a1a1a]">
-                    <a href={item.href} className="transition-colors hover:text-black/70">
-                      {item.label}
-                    </a>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 rounded-xl bg-[#1C1A17] border border-[#332E27] text-[#C6833E]">
+              <Award className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+                10-Year Stitch Warranty
+              </h4>
+              <p className="text-xs text-[#8C867C] mt-1">
+                Triple-reinforced saddle stitching built to outlast decades.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 rounded-xl bg-[#1C1A17] border border-[#332E27] text-[#C6833E]">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+                MagFlap™ Precision
+              </h4>
+              <p className="text-xs text-[#8C867C] mt-1">
+                Rare-earth N52 magnetic snap ejection mechanism.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 rounded-xl bg-[#1C1A17] border border-[#332E27] text-[#C6833E]">
+              <Heart className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+                Open Parcel Delivery
+              </h4>
+              <p className="text-xs text-[#8C867C] mt-1">
+                Inspect your leather before payment across Pakistan.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Links Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 py-14 border-b border-[#262320]">
+          {/* Brand Column */}
+          <div className="lg:col-span-2 flex flex-col justify-between">
+            <div>
+              <Link to="/" className="inline-block">
+                <span className="font-[var(--font-display)] text-3xl font-extrabold tracking-[0.2em] uppercase text-white">
+                  LUVEO
+                </span>
+                <span className="block text-[10px] uppercase tracking-[0.26em] font-semibold text-[#8C867C] mt-1">
+                  Bespoke Leather Goods · Est. 2024
+                </span>
+              </Link>
+              <p className="text-sm text-[#A39D93] mt-4 max-w-sm leading-relaxed">
+                We craft minimal, high-utility leather goods designed to age alongside you. Every piece begins with carefully selected full-grain hides, vegetable tanning, and hand-burnished wax edges.
+              </p>
+            </div>
+
+            <div className="mt-6 text-xs text-[#6B655C]">
+              Proudly Handcrafted in Pakistan · Shipped Globally
+            </div>
+          </div>
+
+          {/* Navigation Columns */}
+          {FOOTER_SECTIONS.map((section) => (
+            <div key={section.title} className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold uppercase tracking-[0.14em] text-white font-[var(--font-display)]">
+                {section.title}
+              </h4>
+              <ul className="flex flex-col gap-2.5">
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      to={link.href}
+                      className="text-xs text-[#9C968C] hover:text-[#D8AF72] transition-colors duration-200 flex items-center gap-1 group"
+                    >
+                      <span>{link.label}</span>
+                      <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-[#C6833E]" />
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
-
-          {/* Newsletter */}
-          <div className="flex flex-col gap-4 text-left md:items-start">
-            <p className="font-sans text-[14px] font-semibold text-black">
-              Explore With us! Sign up to receive exclusive access to product drops, company news, and more.
-            </p>
-            <form className="flex w-full max-w-[420px] gap-2" onSubmit={(e) => e.preventDefault()}>
-              <label className="sr-only" htmlFor="footer-email">Email</label>
-              <input
-                id="footer-email"
-                type="email"
-                placeholder="Email"
-                required
-                className="w-full rounded-[12px] border border-black/10 bg-white px-4 py-3 text-[15px] font-medium text-black outline-none focus:border-black"
-              />
-              <button
-                type="submit"
-                className="rounded-[12px] bg-black px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#1a1a1a]"
-              >
-                Submit
-              </button>
-            </form>
-
-            <div className="flex items-center gap-4 pt-2 text-black">
-              <a href="https://www.facebook.com" aria-label="Facebook" className="transition hover:text-black/60">
-                <FacebookIcon />
-              </a>
-              <a href="https://www.instagram.com" aria-label="Instagram" className="transition hover:text-black/60">
-                <InstagramIcon />
-              </a>
-              <a href="https://www.twitter.com" aria-label="Twitter" className="transition hover:text-black/60">
-                <TwitterIcon />
-              </a>
-            </div>
-          </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-black/10 pt-6 text-center text-[12px] font-medium text-black/60 md:flex-row md:text-left">
-          <Link to="/" className="font-serif text-[18px] font-bold tracking-[0.12em] uppercase text-black">Luveo</Link>
-          <p>© {new Date().getFullYear()} Luveo. All rights reserved.</p>
+        {/* Bottom Credits */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6B655C]">
+          <p>© {new Date().getFullYear()} LUVEO Leather Co. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <span className="hover:text-white cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-white cursor-pointer">Terms of Service</span>
+            <span className="hover:text-white cursor-pointer">Authenticity Guarantee</span>
+          </div>
         </div>
       </div>
     </footer>
