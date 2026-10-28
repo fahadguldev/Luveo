@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminBackLink from './AdminBackLink';
+import { getAuthHeaders } from '../lib/auth.js';
 
 const AdminOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -17,9 +18,11 @@ const AdminOrdersPage = () => {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`);
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`, {
+                    headers: getAuthHeaders(),
+                    withCredentials: true
+                });
                 setOrders(response.data.orders);
-                console.log(response.data);
                 setError(null);
                 setLoading(false);
             } catch (err) {
@@ -110,6 +113,9 @@ const AdminOrdersPage = () => {
             const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/analytics/update-order-status`, {
                 orderID: orderId,
                 orderStatus: newStatus,
+            }, {
+                headers: getAuthHeaders(),
+                withCredentials: true
             });
 
             setStatusMessages(prev => ({
@@ -147,7 +153,10 @@ const AdminOrdersPage = () => {
     const cancelOrder = async (orderId) => {
         setCancelState(prev => ({ ...prev, [orderId]: { loading: true, message: null, error: false } }));
         try {
-            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/admin/cancel-order/${orderId}`);
+            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/admin/cancel-order/${orderId}`, {
+                headers: getAuthHeaders(),
+                withCredentials: true
+            });
             setOrders(prev => prev.filter(o => o._id !== orderId));
             setCancelState(prev => ({ ...prev, [orderId]: { loading: false, message: 'Order cancelled', error: false } }));
         } catch {

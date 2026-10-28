@@ -186,7 +186,7 @@
 
 //                 <div className="text-center mt-6">
 //                     <p className="text-sm text-gray-600">
-//                         Don't have an account?{" "}
+//                         Don&apos;t have an account?{" "}
 //                         <Link to="/signup" className="text-blue-600 hover:underline font-medium">
 //                             Create an account
 //                         </Link>
@@ -199,7 +199,7 @@
 
 // export default Login;
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -239,6 +239,7 @@ const Login = () => {
             // Store user data
             localStorage.setItem("user", JSON.stringify(response.data.user));
             localStorage.setItem("token", response.data.token);
+            window.dispatchEvent(new Event('auth-change'));
 
             navigate('/profile');
         } catch (error) {
@@ -412,7 +413,7 @@ const Login = () => {
 
                 <div className="text-center mt-6">
                     <p className="text-sm text-gray-600">
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Link to="/signup" className="text-blue-600 hover:underline font-medium">
                             Create an account
                         </Link>

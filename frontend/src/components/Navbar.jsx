@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const SearchIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -47,6 +47,7 @@ const navItems = [
 ];
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -57,6 +58,15 @@ const Navbar = () => {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/all-products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <div className="absolute inset-x-0 top-0 z-50">
@@ -108,7 +118,7 @@ const Navbar = () => {
             </Link>
 
             <Link
-              to="/profile"
+              to="/checkout"
               aria-label="Cart"
               className="text-[var(--prada-black)] flex transition-opacity duration-200 hover:opacity-60"
             >
@@ -144,22 +154,23 @@ const Navbar = () => {
         {/* ── Search Bar (dropdown) ── */}
         {searchOpen && (
           <div className="border-t border-[var(--prada-border)] px-10 py-5 bg-[var(--prada-white)]">
-            <div className="max-w-[600px] mx-auto relative">
+            <form onSubmit={handleSearchSubmit} className="max-w-[600px] mx-auto relative">
               <input
                 autoFocus
                 type="text"
                 placeholder="Search collections..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full border-0 border-b-2 border-[var(--prada-black)] outline-none text-base tracking-[0.05em] py-2.5 font-[var(--font-sans)] bg-transparent text-[var(--prada-black)]"
+                className="w-full border-0 border-b-2 border-[var(--prada-black)] outline-none text-base tracking-[0.05em] py-2.5 font-[var(--font-sans)] bg-transparent text-[var(--prada-black)] pr-8"
               />
               <button
+                type="button"
                 onClick={() => setSearchOpen(false)}
                 className="absolute right-0 top-1/2 -translate-y-1/2 text-[1.5rem] text-[var(--prada-gray)] hover:opacity-70"
               >
                 ×
               </button>
-            </div>
+            </form>
           </div>
         )}
       </header>

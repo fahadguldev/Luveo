@@ -1,27 +1,27 @@
-import { useEffect, useState } from 'react'
-import { Route, Routes, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { SuccessPayment, CancelPayment } from './components/Success';
-import axios from 'axios'
-import Home from './Home'
-import Signup from './components/Signup'
-import Login from './components/Login'
-import ProductDisplay from './components/ProductDisplay'
-import Admin from './components/Admin'
-import AddProduct from './components/AddProducts'
-import User from './components/User'
-import Profile from './components/Profile'
-import EditProduct from './components/EditProduct'
-import AllProducts from './components/AllProducts'
-import AdminOrdersPage from './components/AdminOrdersPage'
+import axios from 'axios';
+import Home from './Home';
+import Signup from './components/Signup';
+import Login from './components/Login';
+import ProductDisplay from './components/ProductDisplay';
+import Admin from './components/Admin';
+import AddProduct from './components/AddProducts';
+import User from './components/User';
+import Profile from './components/Profile';
+import EditProduct from './components/EditProduct';
+import AllProducts from './components/AllProducts';
+import AdminOrdersPage from './components/AdminOrdersPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import Checkout from './components/Checkout'
-import Analytics from './components/Analytics'
-import WhatsAppButton from './components/WhatsappBtn'
-import NotificationPopup from './components/Notification'
-import AddNotification from './components/AddNotification'
-// import RandomOrder from './components/random/RandomOrder'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
+import Checkout from './components/Checkout';
+import Analytics from './components/Analytics';
+import WhatsAppButton from './components/WhatsappBtn';
+import NotificationPopup from './components/Notification';
+import AddNotification from './components/AddNotification';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import { getCurrentUser } from './lib/auth.js';
 
 /* Wrap public pages with the Prada Navbar + Footer */
 const PublicLayout = ({ children }) => (
@@ -33,38 +33,40 @@ const PublicLayout = ({ children }) => (
 );
 
 const App = () => {
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const [user, setUser] = useState(() => getCurrentUser());
   const role = user?.role || null;
-  // const isUserLoggedIn = !!user && !!role;
-  const [visitor, setVisitor] = useState(0)
-  
+
   useEffect(() => {
-    setVisitor((prevVisitor) => prevVisitor + 1);
-  }, [])
-  console.log(visitor)
+    const handleAuthChange = () => {
+      setUser(getCurrentUser());
+    };
+    window.addEventListener('storage', handleAuthChange);
+    window.addEventListener('auth-change', handleAuthChange);
+    return () => {
+      window.removeEventListener('storage', handleAuthChange);
+      window.removeEventListener('auth-change', handleAuthChange);
+    };
+  }, []);
 
   const updateVisitCount = async () => {
     try {
-      const response = await axios.put(
+      await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}/updateGlobalVisitCount`,
       );
-      console.log('Updated Visit Count:', response.data);
     } catch (error) {
       console.error('Error updating visit count:', error);
     }
   };
-  
+
   useEffect(() => {
-    updateVisitCount()
-  }, [])
+    updateVisitCount();
+  }, []);
 
   return (
     <div className='overflow-hidden'>
       {/* Show these components only for non-admin users */}
       {role !== "admin" && (
-        console.log("🔵 Non-admin user detected, showing RandomOrder and WhatsAppButton"),
         <>
-          {/* <RandomOrder /> */}
           <WhatsAppButton />
           <NotificationPopup />
         </>

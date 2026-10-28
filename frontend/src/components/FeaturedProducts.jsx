@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import AlertMessage from "./Alert";
 import ProductCard from "./ProductCard";
@@ -25,7 +25,9 @@ const FeaturedProducts = () => {
       try {
         const u = JSON.parse(stored);
         setUserId(u.id ?? u.user?.id);
-      } catch {}
+      } catch (err) {
+        console.error(err);
+      }
     }
   }, []);
 
@@ -36,8 +38,8 @@ const FeaturedProducts = () => {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/product/get-products?featured=true&limit=7`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setProducts(data.products);
-      } catch (e) {
+        setProducts(data.products || []);
+      } catch {
         setError("Unable to load products. Please try again.");
         setProducts([]);
       } finally {
@@ -60,11 +62,17 @@ const FeaturedProducts = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
       const user = res.data?.newUser;
-      if (user) { localStorage.setItem("user", JSON.stringify(user)); window.location.reload(); }
-    } catch {}
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+        window.dispatchEvent(new Event('auth-change'));
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const sortedProducts = React.useMemo(() => {
+  const sortedProducts = useMemo(() => {
     const arr = [...products];
     switch (sortBy) {
       case "price-low":  return arr.sort((a, b) => a.price - b.price);

@@ -174,8 +174,6 @@ import {
     AiOutlineWarning,
     AiOutlineClose
 } from "react-icons/ai";
-import axios from 'axios';
-import { useNavigate } from "react-router-dom";
 
 /**
  * Card-style alert message component
@@ -203,8 +201,6 @@ const AlertMessage = ({
     const [visible, setVisible] = useState(true); // Start visible by default
     const [leaving, setLeaving] = useState(false);
     const timerRef = useRef(null);
-
-    const navigate = useNavigate();
     
     // Define styles based on alert type
     const alertStyles = {
@@ -294,23 +290,6 @@ const AlertMessage = ({
     }, [visible]);
 
     if (!visible) return null;
-
-    const handleGuestAcct = async () => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
-            const user = response.data?.newUser;
-            if (user) {
-                localStorage.setItem("user", JSON.stringify(user));
-                console.log("Guest account created:", user);
-                handleClose(); // Close alert after successful guest login
-                navigate('/');
-            } else {
-                console.error("No user returned from guest-signup API");
-            }
-        } catch (error) {
-            console.error("Error creating guest account:", error);
-        }
-    };
 
     return (
         <div

@@ -1,13 +1,14 @@
 
 import { useEffect, useState } from "react";
-import axios from 'axios'
+import axios from 'axios';
 import AdminBackLink from "./AdminBackLink";
+import { getAuthHeaders, getAuthToken } from "../lib/auth.js";
+
 const User = () => {
     const [user, setUser] = useState({
         name: "",
         email: "",
         password: "",
-        cart: "",
         role: "user",
     });
     const [users, setUsers] = useState([]);
@@ -23,7 +24,7 @@ const User = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const { name, email, password, cart, role } = user;
+        const { name, email, password, role } = user;
 
         if (!name || !email || !password || !role) {
             alert("Please fill all the required fields");
@@ -31,20 +32,20 @@ const User = () => {
         }
 
         try {
-            const token = JSON.parse(localStorage.getItem("user"))?.token;
+            const token = getAuthToken();
             if (!token) {
                 console.error("🚨 No token found in localStorage!");
-                toast.error("Authentication failed. Please log in again.");
+                alert("Authentication failed. Please log in again.");
                 return;
             }
 
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/admin/add-user`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json", // ✅ Proper content type
-                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                    ...getAuthHeaders(),
                 },
-                body: JSON.stringify({ name, email, password, role }), // ✅ Send JSON
+                body: JSON.stringify({ name, email, password, role }),
                 credentials: "include"
             });
 
@@ -52,8 +53,8 @@ const User = () => {
 
             if (response.ok) {
                 alert("User added successfully!");
-                setUsers(prev => [...prev, data.user]); // updated to push the actual user
-                setUser({ name: "", email: "", password: "", cart: "", role: "user" });
+                setUsers(prev => [...prev, data.user]);
+                setUser({ name: "", email: "", password: "", role: "user" });
             } else {
                 alert(data.message || "Failed to add user");
             }
@@ -63,40 +64,48 @@ const User = () => {
         }
     };
 
-
     const fetchUsers = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/get-users`);
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/get-users`, {
+                headers: getAuthHeaders(),
+                credentials: "include"
+            });
             const data = await response.json();
-            console.table(data)
-            setUsers(data);
+            setUsers(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching users:", error);
         }
     };
+
     const deleteUser = async (userId) => {
+        if (!window.confirm("Are you sure you want to delete this user?")) return;
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/admin/delete-user/${userId}`);
-            console.log(response.data);
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/admin/delete-user/${userId}`, {}, {
+                headers: getAuthHeaders(),
+                withCredentials: true
+            });
+            setUsers(prev => prev.filter(u => u._id !== userId));
+            alert("User deleted successfully!");
         } catch (error) {
             console.error('Delete user error:', error.response?.data || error.message);
+            alert(error.response?.data?.message || 'Failed to delete user');
         }
     };
 
     useEffect(() => {
         fetchUsers();
     }, []);
-    // console.log(JSON.stringify(users))
 
     const handleRoleChange = async (userId, newRole) => {
-
-        alert("are you sure you want to update the role")
+        if (!window.confirm("Are you sure you want to update this user's role?")) return;
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/update-role `, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user/update-role`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    ...getAuthHeaders(),
                 },
+                credentials: "include",
                 body: JSON.stringify({ userId, role: newRole }),
             });
 
@@ -106,7 +115,8 @@ const User = () => {
                 );
                 alert("Role updated successfully!");
             } else {
-                alert("Failed to update role");
+                const data = await response.json();
+                alert(data.message || "Failed to update role");
             }
         } catch (error) {
             console.error("Error updating role:", error);
