@@ -1,4 +1,6 @@
 import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -16,9 +18,11 @@ import { cloudinaryConnect } from './config/cloudinary.js';
 import CheckoutRoutes from './routes/checkout.routes.js';
 import VisitCounter from './models/visitCount.model.js';
 import notificationRoutes from './routes/notification.routes.js';
+import { initOrderChangeStream, closeOrderChangeStreams } from './services/orderStream.service.js';
 
 // Initialize app
 const app = express();
+const server = http.createServer(app);
 
 // Properly handle CORS origins
 const baseOrigins = [
@@ -49,12 +53,27 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+// Initialize Socket.io server with matching CORS configuration
+const io = new Server(server, {
+    cors: corsOptions,
+    pingTimeout: 20000,
+    pingInterval: 25000,
+});
+
+io.on('connection', (socket) => {
+    // Admin dashboard joins 'admin_orders' room for scoped order notifications
+    socket.on('join_admin_orders', () => {
+        socket.join('admin_orders');
+    });
+});
+
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 // Connect to database and services
 connectDB();
 cloudinaryConnect();
+initOrderChangeStream(io);
 
 // Use express.json() for all non-webhook routes
 app.use((req, res, next) => {
@@ -126,8 +145,17 @@ app.use((err, req, res, next) => {
 
 // Start server
 const port = process.env.PORT || process.env.LOCALHOST || 5000;
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`✅ Backend server running on port: ${port}`);
 });
 
+// Graceful cleanup on shutdown
+const handleGracefulShutdown = async () => {
+    await closeOrderChangeStreams();
+    io.close();
+};
+process.on('SIGINT', handleGracefulShutdown);
+process.on('SIGTERM', handleGracefulShutdown);
+
+export { server, io };
 export default app;
