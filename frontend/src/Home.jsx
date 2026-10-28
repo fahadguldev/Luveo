@@ -1,8 +1,8 @@
 import Carousel from "./components/Carousel";
 import TrustMarquee from "./components/TrustMarquee";
 import Heading from "./components/Heading";
-import Explore from "./components/Explore";
 import FeaturedProducts from "./components/FeaturedProducts";
+import Explore from "./components/Explore";
 import LeatherAnatomy from "./components/motion/LeatherAnatomy";
 import InteractivePatinaSlider from "./components/motion/InteractivePatinaSlider";
 import CustomerReviews from "./components/CustomerReviews";
@@ -18,27 +18,29 @@ export const Home = () => {
       {/* 2. Leather Hallmarks Infinite Marquee */}
       <TrustMarquee />
 
-      {/* 3. Curated Leather Categories Grid */}
+      {/* 3. Products IMMEDIATELY on Top (Depth Reduced for Fast Buying) */}
+      <div id="catalog-section">
+        <Heading
+          heading="Best-Selling Leather Goods"
+          subHeading="100% Full-Grain Hide · Fast COD Delivery"
+          description="Handcrafted in Pakistan with solid brass hardware, N52 magnetic ejection, and 10-year stitch warranty."
+        />
+        <FeaturedProducts />
+      </div>
+
+      {/* 4. Curated Leather Categories Grid */}
       <Heading
-        heading="Curated Leather Goods"
-        subHeading="Proudly Handcrafted in Pakistan"
-        description="Designed with minimal lines and maximum utility. Explore our signature magnetic wallets, full-grain belts, and travel organizers."
+        heading="Explore Collections"
+        subHeading="Bespoke Atelier Range"
+        description="From ultra-slim MagFlap™ wallets to unbonded 3.8mm bridle belts, explore by craft category."
       />
       <Explore />
 
-      {/* 4. Interactive Craftsmanship & Anatomy Breakdown */}
+      {/* 5. Interactive Craftsmanship & Anatomy Breakdown */}
       <LeatherAnatomy />
 
-      {/* 5. Signature Collection Grid with Animated Category Tabs */}
-      <Heading
-        heading="The 2026 Atelier Catalog"
-        subHeading="Engineered For Everyday Carry"
-        description="Every piece is hand-burnished with natural carnauba beeswax and backed by our 10-year craftsmanship guarantee."
-      />
-      <FeaturedProducts />
-
       {/* 6. Interactive Patina Evolution Showcase */}
-      <section className="py-16 px-4 sm:px-6 lg:px-12 bg-[#FAF8F5]">
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-12 bg-[#FAF8F5]">
         <InteractivePatinaSlider />
       </section>
 

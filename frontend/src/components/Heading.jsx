@@ -15,7 +15,7 @@ export const Heading = ({
 
   return (
     <div
-      className={`px-4 sm:px-6 pt-16 pb-8 max-w-4xl flex flex-col ${
+      className={`px-4 sm:px-6 pt-10 sm:pt-14 pb-4 sm:pb-8 max-w-4xl flex flex-col ${
         alignClasses[align] || alignClasses.center
       } ${className}`}
     >
@@ -26,13 +26,13 @@ export const Heading = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="inline-flex items-center gap-2 mb-3"
+          className="inline-flex items-center gap-2 mb-2 sm:mb-3"
         >
-          <span className="w-6 h-[1.5px] bg-[#9B5A2B]" />
-          <span className="text-xs sm:text-[13px] font-bold tracking-[0.2em] uppercase text-[#9B5A2B] font-[var(--font-sans)]">
+          <span className="w-5 sm:w-6 h-[1.5px] bg-[#9B5A2B]" />
+          <span className="text-[11px] sm:text-[13px] font-bold tracking-[0.2em] uppercase text-[#9B5A2B] font-[var(--font-sans)]">
             {subHeading}
           </span>
-          <span className="w-6 h-[1.5px] bg-[#9B5A2B]" />
+          <span className="w-5 sm:w-6 h-[1.5px] bg-[#9B5A2B]" />
         </motion.div>
       )}
 
@@ -42,7 +42,7 @@ export const Heading = ({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.4rem] font-extrabold text-[#0D0C0B] leading-[1.1] tracking-tight font-[var(--font-display)]"
+        className="text-2xl sm:text-4xl md:text-5xl lg:text-[3.2rem] font-extrabold text-[#0D0C0B] leading-[1.15] tracking-tight font-[var(--font-display)]"
       >
         {heading}
       </motion.h2>
@@ -54,7 +54,7 @@ export const Heading = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-sm sm:text-base text-[#736E66] max-w-xl mt-3 font-normal leading-relaxed"
+          className="text-xs sm:text-base text-[#736E66] max-w-xl mt-2 sm:mt-3 font-normal leading-relaxed"
         >
           {description}
         </motion.p>
