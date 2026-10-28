@@ -1,35 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&family=Montserrat:wght@300;400;600;700&family=Outfit:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* ─── WALDOR LEATHER-STYLE DESIGN TOKENS ─── */
+/* ─── LUVEO LUXURY LEATHER DESIGN TOKENS ─── */
 :root {
-  --prada-black: #121212;
-  /* Deep charcoal */
+  /* Rich Leather & Earth Atelier Palette */
+  --leather-obsidian: #0D0C0B;
+  --leather-espresso: #181614;
+  --leather-cognac: #9B5A2B;
+  --leather-amber: #C6833E;
+  --leather-saddle: #844C24;
+  --leather-gold: #D4AF37;
+  --leather-brass: #C5A059;
+  --leather-cream: #FBF9F5;
+  --leather-sand: #F4EFE6;
+  --leather-border: #E8E2D6;
+  --leather-muted: #736E66;
+
+  /* Backward Compatibility Tokens */
+  --prada-black: #0D0C0B;
   --prada-white: #FFFFFF;
-  --prada-off-white: #F3F3F3;
-  /* Light grey background */
-  --prada-gray: #6B7280;
-  /* Neutral gray */
-  --prada-light-gray: #E5E7EB;
-  --prada-mid-gray: #9CA3AF;
-  --prada-border: #E5E7EB;
+  --prada-off-white: #F8F6F1;
+  --prada-gray: #736E66;
+  --prada-light-gray: #E8E2D6;
+  --prada-mid-gray: #A39D93;
+  --prada-border: #E8E2D6;
+  --brand-accent: #9B5A2B;
 
-  --brand-accent: #E53935;
-  /* Red badge/accent color */
+  /* Typography */
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Montserrat', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  --font-serif: 'Montserrat', sans-serif;
-  /* Headings */
-  --font-sans: 'Montserrat', sans-serif;
-  /* Body */
+  --tracking-luxury: 0.16em;
+  --tracking-wide: 0.06em;
+  --transition-base: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-  --tracking-luxury: 0.1em;
-  /* Less dramatic tracking for modern look */
-  --tracking-wide: 0.05em;
-  --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  /* Used for product cards */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
 }
 
 /* ─── BASE RESET & TYPOGRAPHY ─── */
@@ -45,39 +54,40 @@ html {
 
 body {
   font-family: var(--font-sans) !important;
-  background-color: var(--prada-off-white);
-  color: var(--prada-black);
+  background-color: var(--leather-cream);
+  color: var(--leather-obsidian);
   font-size: 16px;
-  /* Slightly larger body font */
   font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: 0;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── WALDOR UTILITY CLASSES ─── */
+/* ─── LUXURY UTILITY CLASSES ─── */
 
-/* Typography */
 .font-serif-luxury {
   font-family: var(--font-serif);
 }
 
+.font-display-luxury {
+  font-family: var(--font-display);
+}
+
 .text-luxury-heading {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  /* Bolder headings */
+  font-family: var(--font-display);
+  font-weight: 700;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
 }
 
 .text-luxury-label {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-luxury);
   text-transform: uppercase;
-  color: var(--prada-gray);
+  color: var(--leather-cognac);
 }
 
 /* Base Link */
@@ -89,7 +99,43 @@ body {
 }
 
 .link-prada:hover {
-  color: var(--prada-gray);
+  color: var(--leather-cognac);
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+/* Luxury Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Fade-in animation */
@@ -98,7 +144,6 @@ body {
     opacity: 0;
     transform: translateY(16px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -106,44 +151,30 @@ body {
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.6s ease forwards;
-}
-
-/* Scroll reveal */
-.reveal {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Image hover zoom */
 .img-zoom {
   overflow: hidden;
   border-radius: var(--radius-md);
-  /* Add radius here */
 }
 
 .img-zoom img {
-  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .img-zoom:hover img {
-  transform: scale(1.03);
-  /* Subtle zoom */
+  transform: scale(1.04);
 }
 
-/* Waldor-style buttons */
+/* Waldor / Luveo Luxury buttons */
 .btn-prada {
   display: inline-block;
   font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--prada-black);
+  color: var(--leather-obsidian);
   background: none;
   border: none;
   cursor: pointer;
@@ -152,7 +183,7 @@ body {
 }
 
 .btn-prada:hover {
-  color: var(--brand-accent);
+  color: var(--leather-cognac);
 }
 
 .btn-prada-outline {
@@ -160,10 +191,9 @@ body {
   font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--prada-black);
+  color: var(--leather-obsidian);
   background: transparent;
-  border: 2px solid var(--prada-black);
-  /* Thicker border */
+  border: 1.5px solid var(--leather-obsidian);
   border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 12px 24px;
@@ -171,8 +201,8 @@ body {
 }
 
 .btn-prada-outline:hover {
-  background: var(--prada-black);
-  color: var(--prada-white);
+  background: var(--leather-obsidian);
+  color: #FFFFFF;
 }
 
 .btn-prada-solid {
@@ -180,9 +210,9 @@ body {
   font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--prada-white);
-  background: var(--prada-black);
-  border: 2px solid var(--prada-black);
+  color: #FFFFFF;
+  background: var(--leather-obsidian);
+  border: 1.5px solid var(--leather-obsidian);
   border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 14px 32px;
@@ -191,21 +221,40 @@ body {
 }
 
 .btn-prada-solid:hover {
-  background: transparent;
-  color: var(--prada-black);
+  background: var(--leather-espresso);
+  border-color: var(--leather-espresso);
 }
 
 /* Slick carousel dots override */
 .slick-dots li button:before {
-  color: rgba(18, 18, 18, 0.3) !important;
+  color: rgba(13, 12, 11, 0.3) !important;
   font-size: 8px !important;
 }
 
 .slick-dots li.slick-active button:before {
-  color: var(--prada-black) !important;
+  color: var(--leather-cognac) !important;
 }
 
 .slick-prev:before,
 .slick-next:before {
-  color: var(--prada-black) !important;
+  color: var(--leather-obsidian) !important;
+}
+
+/* Custom Scrollbar for Luxury Feel */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--leather-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D8D2C5;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--leather-cognac);
 }

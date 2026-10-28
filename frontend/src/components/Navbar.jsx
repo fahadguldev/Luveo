@@ -1,62 +1,49 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, User, ShoppingBag, Menu, X, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 
-const SearchIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <circle cx="11" cy="11" r="7" />
-    <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
-  </svg>
-);
-
-const AccountIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
-  </svg>
-);
-
-const CartIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" strokeLinejoin="round" />
-    <line x1="3" y1="6" x2="21" y2="6" />
-    <path d="M16 10a4 4 0 01-8 0" />
-  </svg>
-);
-
-const MenuIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <line x1="4" y1="7" x2="20" y2="7" />
-    <line x1="4" y1="12" x2="20" y2="12" />
-    <line x1="4" y1="17" x2="20" y2="17" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <line x1="5" y1="5" x2="19" y2="19" />
-    <line x1="19" y1="5" x2="5" y2="19" />
-  </svg>
-);
-
-const navItems = [
-  { label: "New Arrivals", path: "/" },
-  { label: "Men",          path: "/products/men" },
-  { label: "Women",        path: "/products/women" },
-  { label: "Gifting",      path: "/products/gifting" },
-  { label: "Explore All",  path: "/all-products" },
+const NAV_LINKS = [
+  { label: "MagFlap™ Wallets", path: "/products/magnetic-wallet" },
+  { label: "Artisan Belts", path: "/products/leather-belts" },
+  { label: "Classic Bifolds", path: "/products/men-wallets" },
+  { label: "Travel & Long", path: "/products/long-wallet" },
+  { label: "All Goods", path: "/all-products" },
 ];
 
-const Navbar = () => {
+const ANNOUNCEMENTS = [
+  "Complimentary express delivery across Pakistan on orders over Rs. 3,000",
+  "Crafted with 100% Certified Full-Grain Cowhide",
+  "10-Year Atelier Craftsmanship Guarantee",
+];
+
+export const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [announcementIdx, setAnnouncementIdx] = useState(0);
+
+  // Redux cart count
+  const cartItems = useSelector((state) => state.cart?.items || []);
+  const cartCount = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 30);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnnouncementIdx((prev) => (prev + 1) % ANNOUNCEMENTS.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSearchSubmit = (e) => {
@@ -69,123 +56,226 @@ const Navbar = () => {
   };
 
   return (
-    <div className="absolute inset-x-0 top-0 z-50">
-      {/* ── Announcement Bar ── */}
-      <div className="bg-[var(--prada-black)] text-[var(--prada-white)] text-xs tracking-[0.05em] text-center py-2.5 px-4 font-[var(--font-sans)] font-semibold">
-        Complimentary shipping on all orders · <span className="text-[var(--brand-accent)]">Shop the Sale</span>
+    <div className="fixed inset-x-0 top-0 z-50 transition-all duration-300">
+      {/* ── Top Announcement Bar ── */}
+      <div className="bg-[#0D0C0B] text-[#FAF8F5] text-[11px] sm:text-xs font-semibold tracking-wider text-center py-2 px-4 border-b border-[#24211E] overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={announcementIdx}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.3 }}
+            className="flex items-center justify-center gap-2 max-w-xl mx-auto"
+          >
+            <Sparkles className="w-3 h-3 text-[#C6833E] shrink-0" />
+            <span className="truncate">{ANNOUNCEMENTS[announcementIdx]}</span>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* ── Main Header ── */}
+      {/* ── Main Navigation Bar ── */}
       <header
-        className={`border-b border-[var(--prada-border)] transition-all duration-300 ${
-          scrolled ? "bg-[rgba(253,253,253,0.98)] backdrop-blur" : "bg-[var(--prada-white)]"
+        className={`transition-all duration-300 border-b ${
+          scrolled
+            ? "bg-[#FAF8F5]/90 backdrop-blur-xl border-[#E8E2D6] shadow-[0_4px_24px_rgba(0,0,0,0.06)] py-3"
+            : "bg-[#FAF8F5] border-[#E8E2D6]/80 py-4"
         }`}
       >
-        <div className="flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] px-4 sm:px-6 md:px-10 py-3 md:py-4 max-w-[1440px] mx-auto gap-4 md:gap-6">
-          {/* Left — Logo */}
-          <Link
-            to="/"
-            className="font-[var(--font-serif)] text-[clamp(1.5rem,2.5vw,2rem)] font-bold tracking-[0.15em] uppercase text-[var(--prada-black)] select-none"
-          >
-            LuvEo
-          </Link>
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between gap-4">
+          {/* Left: Mobile Menu Button & Brand Logo */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden p-1.5 text-[#0D0C0B] hover:text-[#9B5A2B] transition cursor-pointer"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
 
-          {/* Centre — Nav links */}
-          <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8">
-            {navItems.map(item => (
-              <NavLink key={item.label} to={item.path} label={item.label} />
-            ))}
+            <Link
+              to="/"
+              className="group flex flex-col items-start select-none no-underline"
+            >
+              <span className="font-[var(--font-display)] text-2xl sm:text-[1.75rem] font-extrabold tracking-[0.22em] uppercase text-[#0D0C0B] leading-none group-hover:text-[#9B5A2B] transition-colors">
+                LUVEO
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.28em] font-bold text-[#8C867C] mt-1 hidden sm:block">
+                Leather Atelier
+              </span>
+            </Link>
+          </div>
+
+          {/* Center: Desktop Nav Links */}
+          <nav className="hidden lg:flex items-center gap-7">
+            {NAV_LINKS.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  className={`relative text-[13px] font-semibold tracking-wide uppercase transition-colors duration-200 py-1 ${
+                    isActive
+                      ? "text-[#0D0C0B]"
+                      : "text-[#6B655C] hover:text-[#0D0C0B]"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="navUnderline"
+                      className="absolute bottom-0 inset-x-0 h-[2px] bg-[#9B5A2B] rounded-full"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Right — Action icons */}
-          <div className="flex items-center justify-end gap-4 md:gap-6">
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Search Trigger */}
             <button
+              type="button"
               onClick={() => setSearchOpen(!searchOpen)}
-              aria-label="Search"
-              className={`text-[var(--prada-black)] transition-opacity duration-200 flex ${
-                searchOpen ? "opacity-50" : "opacity-100"
-              }`}
+              className="p-2 text-[#0D0C0B] hover:text-[#9B5A2B] transition rounded-full hover:bg-black/5 cursor-pointer"
+              aria-label="Search catalog"
             >
-              <SearchIcon />
+              <Search className="w-5 h-5" />
             </button>
 
+            {/* Profile */}
             <Link
               to="/profile"
-              aria-label="Account"
-              className="text-[var(--prada-black)] flex transition-opacity duration-200 hover:opacity-60"
+              className="p-2 text-[#0D0C0B] hover:text-[#9B5A2B] transition rounded-full hover:bg-black/5 cursor-pointer"
+              aria-label="User account"
             >
-              <AccountIcon />
+              <User className="w-5 h-5" />
             </Link>
 
+            {/* Cart Link with Badge */}
             <Link
               to="/checkout"
-              aria-label="Cart"
-              className="text-[var(--prada-black)] flex transition-opacity duration-200 hover:opacity-60"
+              className="relative p-2 text-[#0D0C0B] hover:text-[#9B5A2B] transition rounded-full hover:bg-black/5 cursor-pointer"
+              aria-label={`View cart (${cartCount} items)`}
             >
-              <CartIcon />
+              <ShoppingBag className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-[#9B5A2B] text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                  {cartCount}
+                </span>
+              )}
             </Link>
-
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle navigation"
-              className="md:hidden text-[var(--prada-black)] flex transition-opacity duration-200 hover:opacity-70"
-            >
-              {mobileOpen ? <CloseIcon /> : <MenuIcon />}
-            </button>
           </div>
         </div>
 
-        {/* Mobile nav */}
-        {mobileOpen && (
-          <nav className="md:hidden border-t border-[var(--prada-border)] px-4 sm:px-6 py-4 bg-[var(--prada-white)] space-y-3">
-            {navItems.map(item => (
-              <Link
-                key={item.label}
-                to={item.path}
-                className="block font-[var(--font-sans)] text-sm font-semibold tracking-[0.05em] uppercase text-[var(--prada-black)]"
-                onClick={() => setMobileOpen(false)}
+        {/* ── Search Dropdown Drawer ── */}
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden border-t border-[#E8E2D6] bg-white px-4 sm:px-8 py-5"
+            >
+              <form
+                onSubmit={handleSearchSubmit}
+                className="max-w-2xl mx-auto flex items-center gap-3 relative"
               >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        )}
+                <Search className="w-5 h-5 text-[#8C867C] shrink-0" />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Search wallets, belts, cardholders, travel folios..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-grow py-2 text-sm sm:text-base font-medium text-[#0D0C0B] placeholder:text-[#A39D93] outline-none bg-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(false)}
+                  className="p-1 text-[#8C867C] hover:text-[#0D0C0B] transition text-sm cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
 
-        {/* ── Search Bar (dropdown) ── */}
-        {searchOpen && (
-          <div className="border-t border-[var(--prada-border)] px-10 py-5 bg-[var(--prada-white)]">
-            <form onSubmit={handleSearchSubmit} className="max-w-[600px] mx-auto relative">
-              <input
-                autoFocus
-                type="text"
-                placeholder="Search collections..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full border-0 border-b-2 border-[var(--prada-black)] outline-none text-base tracking-[0.05em] py-2.5 font-[var(--font-sans)] bg-transparent text-[var(--prada-black)] pr-8"
-              />
-              <button
-                type="button"
-                onClick={() => setSearchOpen(false)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-[1.5rem] text-[var(--prada-gray)] hover:opacity-70"
-              >
-                ×
-              </button>
-            </form>
+      {/* ── Mobile Navigation Sheet ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Slide-out Drawer */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: "0%" }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 240 }}
+              className="absolute inset-y-0 left-0 w-4/5 max-w-sm bg-[#FAF8F5] border-r border-[#E8E2D6] p-6 flex flex-col justify-between shadow-2xl z-10"
+            >
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between pb-6 border-b border-[#E8E2D6]">
+                  <div>
+                    <span className="font-[var(--font-display)] text-2xl font-extrabold tracking-[0.2em] uppercase text-[#0D0C0B]">
+                      LUVEO
+                    </span>
+                    <span className="block text-[10px] uppercase tracking-[0.2em] text-[#8C867C] font-semibold">
+                      Leather Atelier
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setMobileOpen(false)}
+                    className="p-2 text-[#0D0C0B] hover:text-[#9B5A2B]"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {/* Navigation Links */}
+                <nav className="flex flex-col gap-4 mt-8">
+                  {NAV_LINKS.map((link) => (
+                    <Link
+                      key={link.label}
+                      to={link.path}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between py-2 text-base font-bold text-[#0D0C0B] uppercase tracking-wide hover:text-[#9B5A2B] transition-colors"
+                    >
+                      <span>{link.label}</span>
+                      <ArrowRight className="w-4 h-4 text-[#A39D93]" />
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Bottom Guarantee Badge */}
+              <div className="pt-6 border-t border-[#E8E2D6]">
+                <div className="flex items-center gap-3 text-xs text-[#6B655C]">
+                  <ShieldCheck className="w-4 h-4 text-[#9B5A2B]" />
+                  <span>100% Certified Full-Grain Cowhide</span>
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
-      </header>
+      </AnimatePresence>
     </div>
   );
 };
-
-/* Animated underline nav link */
-const NavLink = ({ to, label }) => (
-  <Link
-    to={to}
-    className="font-[var(--font-sans)] text-sm font-semibold tracking-[0.05em] uppercase text-[var(--prada-black)] pb-1 border-b-2 border-transparent hover:border-[var(--prada-black)] transition-colors duration-200 whitespace-nowrap"
-  >
-    {label}
-  </Link>
-);
 
 export default Navbar;
