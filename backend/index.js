@@ -15,34 +15,30 @@ import AnalyticsRoutes from './routes/analytics.routes.js';
 import { cloudinaryConnect } from './config/cloudinary.js';
 import CheckoutRoutes from './routes/checkout.routes.js';
 import VisitCounter from './models/visitCount.model.js';
-import visitCounter from './models/visitCount.model.js';
 import notificationRoutes from './routes/notification.routes.js';
 
-// Initialize app and services,
+// Initialize app
 const app = express();
 
 // Properly handle CORS origins
-const allowedOrigins = [
+const baseOrigins = [
     "http://localhost:5173",
+    "http://localhost:3000",
     "https://luveo-frontend.vercel.app",
-    "luveo-frontend-git-animation-dev-rfguls-projects.vercel.app",
+    "https://luveo-frontend-git-animation-dev-rfguls-projects.vercel.app",
 ];
 
-if (process.env.FRONT_END_URL) {
+const allowedOrigins = [...baseOrigins];
+if (process.env.FRONT_END_URL && !allowedOrigins.includes(process.env.FRONT_END_URL)) {
     allowedOrigins.push(process.env.FRONT_END_URL);
 }
 
 const corsOptions = {
     origin: function (origin, callback) {
-        const allowedOrigins = [
-            "http://localhost:5173",
-            "https://luveo-frontend.vercel.app",
-            "luveo-frontend-git-animation-dev-rfguls-projects.vercel.app"
-        ];
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(o => origin.endsWith('.vercel.app'))) {
             callback(null, true);
         } else {
-            callback(new Error("Not allowed by CORS"));
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     },
     credentials: true,
@@ -51,9 +47,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
-// ✅ Handle preflight requests for all routes
 app.options('*', cors(corsOptions));
 
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -94,8 +87,8 @@ app.use('/notification', notificationRoutes);
 // Global visit counter routes
 app.get('/globalVisitCount', async (req, res) => {
     try {
-        const visitorCount = await visitCounter.findOne({});
-        res.status(200).json({ message: visitorCount });
+        const countDoc = await VisitCounter.findOne({});
+        res.status(200).json({ message: countDoc || { globalVisitCount: 0 } });
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
     }
@@ -103,8 +96,8 @@ app.get('/globalVisitCount', async (req, res) => {
 
 app.put('/updateGlobalVisitCount', async (req, res) => {
     try {
-        const visitCounter = await VisitCounter.findOneAndUpdate(
-            {}, // Only one document exists
+        const updated = await VisitCounter.findOneAndUpdate(
+            {},
             {
                 $inc: { globalVisitCount: 1 },
                 $set: { lastUpdated: new Date() }
@@ -113,13 +106,22 @@ app.put('/updateGlobalVisitCount', async (req, res) => {
         );
 
         res.json({
-            visitorCount: visitCounter.globalVisitCount,
-            lastUpdated: visitCounter.lastUpdated,
+            visitorCount: updated.globalVisitCount,
+            lastUpdated: updated.lastUpdated,
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Error updating visit count');
+        console.error("Error updating visit count:", err);
+        res.status(500).json({ error: 'Error updating visit count' });
     }
+});
+
+// Centralized error handler
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err.message);
+    res.status(err.status || 500).json({
+        message: err.message || "Internal server error",
+        error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
 });
 
 // Start server

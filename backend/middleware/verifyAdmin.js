@@ -1,49 +1,55 @@
 import jwt from 'jsonwebtoken';
 
-const verifyAdmin = (req, res, next) => {
+export const verifyAdmin = (req, res, next) => {
     try {
-        // Support both Cookie & Authorization Header
-        const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-
-        console.log("🟡 All Cookies:", req.cookies);
-        console.log("🔹 Token received:", token); 
+        const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
         if (!token) {
-            console.log("⛔ No token found! Unauthorized access.");
-            return res.status(401).json({ message: "Unauthorized" });
+            return res.status(401).json({ message: "Unauthorized: No token provided" });
         }
 
-        // Check if JWT_SECRET is properly loaded
         if (!process.env.JWT_SECRET) {
-            console.log("⛔ JWT_SECRET not found in environment variables!");
+            console.error("⛔ JWT_SECRET not configured");
             return res.status(500).json({ message: "Server configuration error" });
         }
 
-        console.log("🔑 JWT_SECRET exists:", !!process.env.JWT_SECRET);
-        console.log("🔑 JWT_SECRET length:", process.env.JWT_SECRET?.length);
-
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("✅ Decoded Token:", decoded);
 
         if (decoded.role !== "admin") {
-            console.log(`⛔ User "${decoded.email}" is not an admin. Access Denied!`);
-            return res.status(403).json({ message: "Forbidden" });
+            return res.status(403).json({ message: "Forbidden: Admin access required" });
         }
 
         req.user = decoded;
-        console.log(`✅ Admin "${decoded.email}" verified successfully!`);
         next();
     } catch (err) {
-        console.log("⛔ JWT Verification Error:", err.message);
-        console.log("⛔ Error Type:", err.name);
-        
-        if (err.name === 'JsonWebTokenError') {
-            console.log("🚨 This usually means JWT_SECRET mismatch!");
-        } else if (err.name === 'TokenExpiredError') {
-            console.log("🚨 Token has expired!");
+        return res.status(401).json({
+            message: "Unauthorized: Invalid or expired token",
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+};
+
+export const verifyAuth = (req, res, next) => {
+    try {
+        const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized: Please log in" });
         }
-        
-        res.status(401).json({ message: "Invalid token", error: err.message });
+
+        if (!process.env.JWT_SECRET) {
+            console.error("⛔ JWT_SECRET not configured");
+            return res.status(500).json({ message: "Server configuration error" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({
+            message: "Unauthorized: Invalid or expired token",
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 };
 

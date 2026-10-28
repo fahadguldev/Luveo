@@ -1,40 +1,22 @@
 
 
 import express from 'express';
-import cloudinary, { cloudinaryConnect } from '../config/cloudinary.js';
+import mongoose from 'mongoose';
+import { cloudinaryConnect } from '../config/cloudinary.js';
 import upload from '../middleware/multer.js';
-import productModel from '../models/product.model.js';
-import orderModel from '../models/Checkout.model.js'
+import orderModel from '../models/Checkout.model.js';
 import userModel from '../models/user.model.js';
 import verifyAdmin from '../middleware/verifyAdmin.js';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 
+import { addProduct, editProduct, deleteProduct } from '../controller/admin.product.controller.js';
 
-import { addProduct,editProduct,deleteProduct } from '../controller/admin.product.controller.js';
-
-const router = express();
+const router = express.Router();
 cloudinaryConnect();
-
-// Helper function to upload images to Cloudinary
-const uploadImgsToCloudinary = async (files) => {
-    try {
-        const uploadPromises = files.map(file =>
-            cloudinary.uploader.upload(file.path)
-        );
-        const results = await Promise.all(uploadPromises);
-        return results.map(result => result.secure_url);
-    } catch (error) {
-        console.error('Error uploading images:', error);
-    }
-};
-
 
 router.post('/add-product', verifyAdmin, upload.any(), addProduct);
 router.put('/edit-product/:id', verifyAdmin, upload.any(), editProduct);
 router.delete('/delete-product/:id', verifyAdmin, deleteProduct);
-
-
-
 
 router.post('/add-user', verifyAdmin, async (req, res) => {
     try {
@@ -69,12 +51,16 @@ router.post('/add-user', verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Error creating user", error: error.message });
     }
 });
-router.post('/delete-user/:id', async (req, res) => {
+
+router.post('/delete-user/:id', verifyAdmin, async (req, res) => {
     const userId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+    }
     try {
         const user = await userModel.findByIdAndDelete(userId);
         if (user) {
-            res.status(200).json({ message: "User deleted successfully", user });
+            res.status(200).json({ message: "User deleted successfully" });
         } else {
             res.status(404).json({ message: "User with this ID does not exist" });
         }
@@ -82,22 +68,21 @@ router.post('/delete-user/:id', async (req, res) => {
         res.status(500).json({ message: `An error occurred: ${error.message}` });
     }
 });
-router.delete('/cancel-order/:id', async (req, res) => {
+
+router.delete('/cancel-order/:id', verifyAdmin, async (req, res) => {
     const orderId = req.params.id;
-    console.log(orderId)
-    try {
-        const order = await orderModel.findOneAndDelete({ _id: orderId })
-        console.log(order)
-        if (!order) {
-            return res.status(404).json({ message: "no order found" })
-        }
-        res.status(200).json({ message: "order deleted successfully" })
-    } catch (error) {
-        res.status(500).json({ message: "server error" })
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID format" });
     }
-})
-
-
-
+    try {
+        const order = await orderModel.findByIdAndDelete(orderId);
+        if (!order) {
+            return res.status(404).json({ message: "No order found" });
+        }
+        res.status(200).json({ message: "Order deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
 
 export default router;

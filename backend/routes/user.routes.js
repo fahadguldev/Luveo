@@ -7,11 +7,26 @@ import jwksRsa from 'jwks-rsa';
 import mongoose from 'mongoose';
 
 import userModel from '../models/user.model.js';
-import checkoutModel from '../models/Checkout.model.js'
+import checkoutModel from '../models/Checkout.model.js';
 import Revenue from '../models/revenue.model.js';
-import productModel from '../models/product.model.js'
+import productModel from '../models/product.model.js';
+import { verifyAdmin, verifyAuth } from '../middleware/verifyAdmin.js';
 
 const router = express.Router();
+
+const getCookieOptions = () => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const options = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+    };
+    if (process.env.COOKIE_DOMAIN) {
+        options.domain = process.env.COOKIE_DOMAIN;
+    }
+    return options;
+};
 
 // Auth0 JWT validation middleware
 const checkJwtAuth0 = expressjwt({
@@ -28,28 +43,43 @@ const checkJwtAuth0 = expressjwt({
 
 // Test route
 router.get('/test', (req, res) => {
-    res.send('test route');
-    console.log(process.env.JWT_SECRET);
+    res.json({ message: 'User routes test endpoint active' });
 });
 
 // Regular signup route
 router.post('/signup', async (req, res) => {
-    const { name, email, password } = req.body;
+    try {
+        const { name, email, password } = req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Name, email, and password are required' });
+        }
 
-    const existingUser = await userModel.findOne({ email });
-    if (existingUser) {
-        return res.status(400).json('User already exists');
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+        const hashPassword = await bcrypt.hash(password, 10);
+        const user = new userModel({
+            name,
+            email,
+            password: hashPassword,
+            authProvider: 'local',
+            role: "user"
+        });
+        await user.save();
+        res.status(201).json({
+            message: 'User Created',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                picture: user.picture
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error signing up', error: error.message });
     }
-    const hashPassword = await bcrypt.hash(password, 10);
-    const user = new userModel({
-        name,
-        email,
-        password: hashPassword,
-        authProvider: 'local',
-        role: "user"
-    });
-    await user.save();
-    res.status(200).json({ message: 'User Created', user });
 });
 
 
@@ -133,13 +163,7 @@ router.post('/auth0-login', async (req, res) => {
         );
 
         // Set cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            domain: ".onrender.com",
-        });
+        res.cookie("token", token, getCookieOptions());
 
         res.status(200).json({
             success: true,
@@ -167,6 +191,10 @@ router.post('/auth0-login', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
         const user = await userModel.findOne({ email });
 
         if (!user) {
@@ -180,7 +208,8 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        const isPasswordCorrect = bcrypt.compare(password, user.password);
+        // Fix critical bug: await bcrypt.compare
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (!isPasswordCorrect) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
@@ -193,13 +222,7 @@ router.post('/login', async (req, res) => {
         );
 
         // Set cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            domain: ".onrender.com",
-        });
+        res.cookie("token", token, getCookieOptions());
 
         // Update last login time
         user.lastLogin = new Date();
@@ -224,12 +247,9 @@ router.post('/login', async (req, res) => {
 // Logout route
 router.post('/logout', (req, res) => {
     try {
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            domain: ".onrender.com",
-        });
+        const cookieOpts = getCookieOptions();
+        delete cookieOpts.maxAge;
+        res.clearCookie("token", cookieOpts);
 
         res.status(200).json({ message: 'Logout successful' });
     } catch (error) {
@@ -237,16 +257,25 @@ router.post('/logout', (req, res) => {
     }
 });
 
-// Update role route
-router.put("/update-role", async (req, res) => {
+// Update role route (Protected: admin only)
+router.put("/update-role", verifyAdmin, async (req, res) => {
     const { userId, role } = req.body;
 
+    const allowedRoles = ["admin", "user", "guest"];
     if (!userId || !role) {
         return res.status(400).json({ message: "User ID and role are required." });
     }
 
+    if (!allowedRoles.includes(role)) {
+        return res.status(400).json({ message: `Role must be one of: ${allowedRoles.join(', ')}` });
+    }
+
     try {
-        const updatedUser = await userModel.findByIdAndUpdate(userId, { role }, { new: true });
+        const updatedUser = await userModel.findByIdAndUpdate(
+            userId,
+            { role },
+            { new: true }
+        ).select('-password');
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found." });
@@ -255,35 +284,38 @@ router.put("/update-role", async (req, res) => {
         res.json({ message: "Role updated successfully!", user: updatedUser });
     } catch (error) {
         console.error("Error updating role:", error);
-        res.status(500).json({ message: "Server error", error });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 
-// Get all users route
-router.get('/get-users', async (req, res) => {
+// Get all users route (Protected: admin only, password excluded)
+router.get('/get-users', verifyAdmin, async (req, res) => {
     try {
         const users = await userModel.find({})
-        .populate('cart')
-        .populate('orderHistory')
+            .select('-password')
+            .populate('cart')
+            .populate('orderHistory');
         res.status(200).json(users);
-    }
-    catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Error fetching users", error });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching users", error: error.message });
     }
 });
 
-// Get single user route
+// Get single user route (password excluded)
 router.get('/get-user/:id', async (req, res) => {
     const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid user ID format" });
+    }
     try {
-        const user = await userModel.findOne({ _id: id });
+        const user = await userModel.findById(id).select('-password');
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         res.status(200).json({ message: "User found", user });
     } catch (error) {
-        res.status(500).json({ message: "Error while searching user", error: error });
+        res.status(500).json({ message: "Error while searching user", error: error.message });
     }
 });
 
@@ -382,13 +414,12 @@ router.post("/checkout", async (req, res) => {
 
         const savedCheckout = await checkout.save({ session });
 
-        // Update user data with session
+        // Update user data with session: set pending order status and clear cart
         await userModel.findByIdAndUpdate(
             userId,
             {
-                $set: { orderStatus: ['Pending'] },
-                $push: { orderHistory: savedCheckout._id },
-                $set: { cart: [] }
+                $set: { orderStatus: ['pending'], cart: [] },
+                $push: { orderHistory: savedCheckout._id }
             },
             { new: true, session }
         );

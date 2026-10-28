@@ -1,23 +1,30 @@
 import express from 'express';
-import productModel from '../models/product.model.js';
-import userModel from '../models/user.model.js'
 import mongoose from 'mongoose';
+import productModel from '../models/product.model.js';
+import userModel from '../models/user.model.js';
 import {
     PRODUCT_CATEGORIES,
     isValidProductCategory,
     normalizeCategory,
 } from '../constants/productCategories.js';
 
+const router = express.Router();
 
+// Category alias mapping for friendly navbar URLs
+const CATEGORY_ALIASES = {
+    'men': 'men-wallets',
+    'women': 'women-bags',
+    'gifting': 'accessories',
+    'wallets': 'men-wallets',
+    'belts': 'leather-belts',
+    'bags': 'women-bags',
+};
 
-const app = express();
+router.get('/test', (req, res) => {
+    res.json({ message: "Product routes active" });
+});
 
-
-app.get('/test', (req, res) => {
-    // console.log("the test route from index.js")
-    res.send("the test route from index.js")
-})
-app.get('/get-products', async (req, res) => {
+router.get('/get-products', async (req, res) => {
     try {
         const { featured, limit } = req.query;
         const query = {};
@@ -34,128 +41,139 @@ app.get('/get-products', async (req, res) => {
         }
 
         const products = await productsQuery;
-        if (!products || products.length === 0) {
-            return res.status(404).json({ message: 'no product found' });
-        }
-
-        res.status(200).json({ message: 'product found successfully,', products });
+        res.status(200).json({
+            message: 'Products fetched successfully',
+            products: products || []
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-})
-app.get('/get-product/:id', async (req, res) => {
+});
+
+router.get('/get-product/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const product = await productModel.findByIdAndUpdate(id,
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid product ID format" });
+        }
+        const product = await productModel.findByIdAndUpdate(
+            id,
             { $inc: { visitCount: 1 } },
             { new: true }
         );
         if (!product) {
-            return res.status(404).json({ message: "product not found" })
+            return res.status(404).json({ message: "Product not found" });
         }
         res.status(200).json({ message: "Product found", product });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
-app.post("/get-selected-products", async (req, res) => {
+
+router.post("/get-selected-products", async (req, res) => {
     try {
         const { ids } = req.body;
-        // console.log("Received IDs:", ids);
 
         if (!Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({ message: "Invalid IDs format" });
+            return res.status(200).json([]);
         }
 
-        const objectIds = ids.map(id => new mongoose.Types.ObjectId(id));
+        const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+        if (validIds.length === 0) {
+            return res.status(200).json([]);
+        }
 
+        const objectIds = validIds.map(id => new mongoose.Types.ObjectId(id));
         const products = await productModel.find({ _id: { $in: objectIds } });
-        // console.log("Fetched Products:", products);
-        res.json(products);
+        res.json(products || []);
     } catch (error) {
-        console.error("Error fetching products:", error);
-        res.status(500).json({ message: "Error fetching products", error });
+        console.error("Error fetching selected products:", error);
+        res.status(500).json({ message: "Error fetching products", error: error.message });
     }
 });
-app.post('/add-to-cart', async (req, res) => {
+
+router.post('/add-to-cart', async (req, res) => {
     try {
         const { productId, userId } = req.body;
-        // console.log(productId, userId)
+        if (!productId || !userId) {
+            return res.status(400).json({ message: "productId and userId are required" });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(productId) || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+
         const product = await productModel.findById(productId);
-        // console.log(product)
         if (!product) {
-            return res.status(404).json({ message: "Product not found" })
+            return res.status(404).json({ message: "Product not found" });
         }
         const user = await userModel.findById(userId);
         if (!user) {
-            return res.status(404).json({ message: "User not found" })
+            return res.status(404).json({ message: "User not found" });
         }
+
         user.cart.push(productId);
         await user.save();
-        res.json({ message: "Product added to cart successfully" })
+        res.json({ message: "Product added to cart successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    catch (error) {
-        res.status(500).json({ error: error.message })
-    }
+});
 
-})
-app.post('/remove-from-cart', async (req, res) => {
+router.post('/remove-from-cart', async (req, res) => {
     try {
         const { productId, userId } = req.body;
-        console.log(productId, userId)
-        const product = await productModel.findById(productId);
-        // console.log(product)
-        if (!product) {
-            return res.status(404).json({ message: "Product not found" })
-            return res.status(404).json({ message: "Product not found" })
+        if (!productId || !userId) {
+            return res.status(400).json({ message: "productId and userId are required" });
         }
+
+        if (!mongoose.Types.ObjectId.isValid(productId) || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+
         const user = await userModel.findById(userId);
         if (!user) {
-            return res.status(404).json({ message: "User not found" })
+            return res.status(404).json({ message: "User not found" });
         }
-        const index = user.cart.indexOf(productId);
+
+        const index = user.cart.findIndex(id => id.toString() === productId.toString());
         if (index > -1) {
             user.cart.splice(index, 1);
+            await user.save();
         }
-        await user.save();
-        res.json({ message: "Product removed from cart successfully" })
+        res.json({ message: "Product removed from cart successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    catch (error) {
-        res.status(500).json({ error: error.message })
-    }
+});
 
-})
-app.get('/categories/:category', async (req, res) => {
+router.get('/categories/:category', async (req, res) => {
     try {
-        const category = normalizeCategory(req.params.category);
+        let categoryParam = normalizeCategory(req.params.category);
+        // Resolve alias if used (e.g. 'men' -> 'men-wallets')
+        if (CATEGORY_ALIASES[categoryParam]) {
+            categoryParam = CATEGORY_ALIASES[categoryParam];
+        }
 
-        if (!isValidProductCategory(category)) {
+        if (!isValidProductCategory(categoryParam)) {
             return res.status(400).json({
                 message: `Category must be one of: ${PRODUCT_CATEGORIES.join(', ')}`,
+                products: []
             });
         }
 
-        const products = await productModel.find({ category });
-
-        if (!products || products.length === 0) {
-            return res.status(404).json({ message: `No products found in ${category} category` });
-        }
-
-        res.status(200).json({ message: "Products found successfully", products });
+        const products = await productModel.find({ category: categoryParam });
+        res.status(200).json({
+            message: "Products found successfully",
+            products: products || []
+        });
     } catch (error) {
         console.error("Error fetching category:", error);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 
-
-
-
-
-
-
-export default app;
+export default router;
 
 
 

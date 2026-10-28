@@ -1,68 +1,63 @@
-import express from 'express'
+import express from 'express';
+import mongoose from 'mongoose';
+import Revenue from '../models/revenue.model.js';
+import checkoutModel from '../models/Checkout.model.js';
+import verifyAdmin from '../middleware/verifyAdmin.js';
 
+const router = express.Router();
 
-import Revenue from '../models/revenue.model.js'
-import checkoutModel from '../models/Checkout.model.js'
-
-
-
-const app = express()
-
-
-
-app.get('/test', (req, res) => {
-
-
-})
-
-
-app.get('/total-revenue', async (req, res) => {
+router.get('/total-revenue', verifyAdmin, async (req, res) => {
     try {
-        const revenueDoc = await Revenue.findOne(); // assuming there's only one document
-        if (!revenueDoc) {
-            return res.status(404).json({ message: 'Revenue data not found' });
-        }
-        res.status(200).json({ message: "fetched revenue successfully", totalRevenue: revenueDoc.total });
+        const revenueDoc = await Revenue.findOne();
+        const total = revenueDoc?.total || 0;
+        res.status(200).json({ message: "fetched revenue successfully", totalRevenue: total });
     } catch (error) {
         console.error('Failed to fetch revenue:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-app.get('/all-orders', async (req, res) => {
+
+router.get('/all-orders', verifyAdmin, async (req, res) => {
     try {
-        const orders = await checkoutModel.find({});
-        if (!orders || orders.length == 0) {
-            return res.status(404).json({ message: "No orders found" })
-        }
-        res.status(200).json({ message: "Found orders successfully", orders: orders })
-    }
-    catch (error) {
+        const orders = await checkoutModel.find({}).sort({ orderDate: -1 });
+        res.status(200).json({ message: "Found orders successfully", orders: orders || [] });
+    } catch (error) {
         console.error('Failed to fetch orders:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
-})
-app.put('/update-order-status', async (req, res) => {
+});
+
+router.put('/update-order-status', verifyAdmin, async (req, res) => {
     const { orderID, orderStatus } = req.body;
-    console.log("Received update-order-status request with orderID:", orderID, "and orderStatus:", orderStatus);
+    const allowedStatuses = ['pending', 'packing', 'shipped', 'delivered', 'cancelled'];
+
     if (!orderID || !orderStatus) {
-        return res.status(400).json({ message: "both order id and order status are required" });
+        return res.status(400).json({ message: "Both order id and order status are required" });
+    }
+
+    const normalizedStatus = orderStatus.toLowerCase();
+    if (!allowedStatuses.includes(normalizedStatus)) {
+        return res.status(400).json({
+            message: `Invalid order status. Allowed: ${allowedStatuses.join(', ')}`
+        });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(orderID)) {
+        return res.status(400).json({ message: "Invalid order ID format" });
     }
 
     try {
-        // Fetch current order to know previous status and amount
         const existingOrder = await checkoutModel.findById(orderID);
         if (!existingOrder) {
             return res.status(404).json({ message: "Order not found" });
         }
 
         const previousStatus = existingOrder.orderStatus;
-
-        // Update status
-        existingOrder.orderStatus = orderStatus;
+        existingOrder.orderStatus = normalizedStatus;
         await existingOrder.save();
-        console.log(existingOrder)
-        // Only add revenue when transitioning to completed once
-        if (orderStatus === 'delivered' && previousStatus !== 'delivered') {
+
+        // Only add revenue when transitioning to delivered
+        if (normalizedStatus === 'delivered' && previousStatus !== 'delivered') {
             await Revenue.findOneAndUpdate(
                 {},
                 { $inc: { total: Number(existingOrder.orderTotal) || 0 } },
@@ -70,12 +65,14 @@ app.put('/update-order-status', async (req, res) => {
             );
         }
 
-        return res.status(200).json({ message: "order status updated successfully" });
+        return res.status(200).json({
+            message: "Order status updated successfully",
+            order: existingOrder
+        });
     } catch (error) {
         console.error("Error updating order status:", error);
-        res.status(500).json({ message: "Server error", error });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 
-
-export default app;
+export default router;

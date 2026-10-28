@@ -1,26 +1,25 @@
-import express from 'express'
-import mongoose from 'mongoose'
-import Checkout from '../models/Checkout.model.js'
+import express from 'express';
+import mongoose from 'mongoose';
+import Checkout from '../models/Checkout.model.js';
 
+const router = express.Router();
 
+router.get('/order-products', async (req, res) => {
+    const { id } = req.query;
 
-const app = express();
-
-app.get('/order-products', async (req, res) => {
-    const { id } = req.query;  // Use req.query to get query parameters
-    console.log(id);  // Log the order ID for debugging
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Valid order ID is required' });
+    }
 
     try {
-        // Find products based on the order ID
-        const order = await Checkout.findById(id);  // Await the promise
+        const order = await Checkout.findById(id);
         if (!order) {
-            return res.status(404).json({ message: 'Products not found' });
+            return res.status(404).json({ message: 'Order not found' });
         }
-        res.status(200).json({ message: 'Products found', order });
+        res.status(200).json({ message: 'Order found', order });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
-
-export default app;
+export default router;
