@@ -1,0 +1,528 @@
+[
+  {
+    "_id": "luveo-magflap-travel",
+    "name": "MagFlap™ Travel & Card Wallet",
+    "tagline": "Ultra-slim RFID bifold with quick-eject magnetic tab",
+    "category": "magnetic-wallet",
+    "price": 5200,
+    "discountPrice": 4199,
+    "stock": 18,
+    "featured": true,
+    "rating": 4.9,
+    "reviewCount": 148,
+    "colors": [
+      {
+        "name": "Cognac Tan",
+        "hex": "#9B5A2B",
+        "images": [
+          "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Obsidian Black",
+        "hex": "#101010",
+        "images": [
+          "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Espresso Brown",
+        "hex": "#3D2817",
+        "images": [
+          "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "Engineered for modern travel and daily carry, the MagFlap™ combines full-grain Tuscan vegetable-tanned hide with an aerospace-grade aluminum card sleeve. Features our patented magnetic thumb-ejector that fans out up to 6 cards instantly while blocking RFID scanners.",
+    "technicalSpecs": {
+      "material": "100% Full-Grain Vegetable-Tanned Cowhide",
+      "dimensions": "10.4 cm x 7.2 cm x 1.2 cm",
+      "weight": "68 grams",
+      "careInstructions": "Condition biannually with natural beeswax leather balm. Wipe clean with a dry cotton cloth."
+    },
+    "features": [
+      "Patented MagFlap™ instant card fanning mechanism",
+      "Aerospace-grade aluminum RFID blocking chamber (1-6 cards)",
+      "Exterior quick-draw slot for transit pass or tap payment",
+      "Full-grain cowhide that develops a rich, golden patina over time",
+      "Dedicated inner sleeve for folded banknotes and business cards",
+      "Hand-burnished, beeswax-sealed edges"
+    ]
+  },
+  {
+    "_id": "luveo-artisan-brass-belt",
+    "name": "Artisan Solid Brass Leather Belt",
+    "tagline": "3.8mm thick single-cut bridle hide with forged brass hardware",
+    "category": "leather-belts",
+    "price": 5800,
+    "discountPrice": 4699,
+    "stock": 14,
+    "featured": true,
+    "rating": 5.0,
+    "reviewCount": 92,
+    "colors": [
+      {
+        "name": "Dark Espresso",
+        "hex": "#2B1D12",
+        "images": [
+          "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Saddle Tan",
+        "hex": "#A36332",
+        "images": [
+          "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Midnight Black",
+        "hex": "#111111",
+        "images": [
+          "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "Crafted from a single unbroken cut of 3.8mm heavyweight bridle leather. Built without synthetic fillers, cardboard, or bonded scraps. Anchored by a solid forged Italian brass buckle fastened with Chicago screws for a lifetime of dependable duty.",
+    "technicalSpecs": {
+      "material": "3.8mm Single-Strap English Bridle Hide",
+      "dimensions": "Width: 35 mm (1.38 inches), Custom waist sizing",
+      "weight": "210 grams",
+      "careInstructions": "Buff with horsehair brush. Apply neat's-foot oil once yearly."
+    },
+    "features": [
+      "Single-ply 10oz heavy steer hide — zero peeling or stretching",
+      "Solid cast brass buckle with antique brushed patina",
+      "Removable Chicago screws allow buckle swap customization",
+      "7 teardrop adjustment holes spaced 1 inch apart",
+      "Hand-dyed and wax-beveled bevel edges for smooth friction-free threading"
+    ]
+  },
+  {
+    "_id": "luveo-heritage-bifold-8card",
+    "name": "Heritage 8-Card Classic Bifold",
+    "tagline": "Traditional hand-stitched wallet with dual cash divider",
+    "category": "men-wallets",
+    "price": 4500,
+    "discountPrice": 3699,
+    "stock": 25,
+    "featured": true,
+    "rating": 4.8,
+    "reviewCount": 115,
+    "colors": [
+      {
+        "name": "Saddle Brown",
+        "hex": "#8A4F28",
+        "images": [
+          "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Matte Onyx",
+        "hex": "#1A1A1A",
+        "images": [
+          "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "The quintessential gentleman's billfold, reimagined with ultra-slim internal skiving to prevent pocket bulk. Features 8 precision-cut card slots, 2 hidden receipt pockets, and a full-length currency compartment lined with supple lambskin.",
+    "technicalSpecs": {
+      "material": "Full-Grain Waxed Pull-Up Cowhide",
+      "dimensions": "11.0 cm x 9.0 cm x 1.0 cm",
+      "weight": "58 grams",
+      "careInstructions": "Rub minor scuffs with fingertips to redistribute natural surface oils."
+    },
+    "features": [
+      "8 precision staggered card pockets with reinforced thumb notches",
+      "Dual-chamber banknote divider for domestic and foreign currency",
+      "Ultra-thin skived edges for a featherweight, flat silhouette",
+      "German braided polyester thread stitching for extreme tensile durability",
+      "RFID protective shielding integrated between leather layers"
+    ]
+  },
+  {
+    "_id": "luveo-executive-passport-wallet",
+    "name": "Executive Long Passport Wallet",
+    "tagline": "Handcrafted boarding pass, passport, and multi-currency folio",
+    "category": "long-wallet",
+    "price": 6800,
+    "discountPrice": 5499,
+    "stock": 10,
+    "featured": true,
+    "rating": 4.9,
+    "reviewCount": 67,
+    "colors": [
+      {
+        "name": "Cognac Glaze",
+        "hex": "#9B5A2B",
+        "images": [
+          "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Charcoal Black",
+        "hex": "#151515",
+        "images": [
+          "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "Designed for global travelers and discerning executives. Holds standard international passports, unfolded banknotes, boarding passes, 12 credit cards, and a micro travel pen. Finished with hand-creased margins and gold foil atelier stamp.",
+    "technicalSpecs": {
+      "material": "Vachetta Full-Grain Tanned Leather",
+      "dimensions": "19.5 cm x 10.0 cm x 1.4 cm",
+      "weight": "115 grams",
+      "careInstructions": "Store in included cotton dust bag when not traveling."
+    },
+    "features": [
+      "Dedicated passport pouch fits all biometric passport booklets",
+      "12 individual card slots + 2 deep currency & travel document pockets",
+      "Quick-slip boarding pass slot on back cover",
+      "Hidden SIM card and ejector pin compartment",
+      "Magnetic closure holds securely without scratching leather"
+    ]
+  },
+  {
+    "_id": "luveo-pebbled-leather-tote",
+    "name": "Atelier Pebbled Leather Tote",
+    "tagline": "Supple full-grain day tote with reinforced double handles",
+    "category": "women-bags",
+    "price": 14500,
+    "discountPrice": 11999,
+    "stock": 8,
+    "featured": true,
+    "rating": 5.0,
+    "reviewCount": 54,
+    "colors": [
+      {
+        "name": "Warm Caramel",
+        "hex": "#C6833E",
+        "images": [
+          "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Noir Black",
+        "hex": "#0D0C0B",
+        "images": [
+          "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "The quintessential daily luxury tote. Sculpted from buttery pebbled cowhide that resists moisture and scratches. Features generous proportions to cradle a 14-inch laptop, personal planner, and makeup pouch, with a magnetic top bridge closure.",
+    "technicalSpecs": {
+      "material": "Full-Grain Pebbled Italian Calfskin",
+      "dimensions": "36.0 cm x 30.0 cm x 13.0 cm (Handle drop: 24 cm)",
+      "weight": "620 grams",
+      "careInstructions": "Wipe with damp microfiber cloth. Store stuffed with tissue to maintain shape."
+    },
+    "features": [
+      "Fits laptops up to 14 inches with protective padded pocket",
+      "Solid brass metal feet protect base from street abrasion",
+      "Interior zippered valuables pocket + dual phone drop pockets",
+      "Supple rolled shoulder handles engineered for zero shoulder strain",
+      "Includes detachable leather key leash with brass snap hook"
+    ]
+  },
+  {
+    "_id": "luveo-minimalist-cardholder",
+    "name": "Slimline 4-Card Front Pocket Cardholder",
+    "tagline": "Featherlight 4mm profile for front-pocket minimalist carry",
+    "category": "men-wallets",
+    "price": 3200,
+    "discountPrice": 2499,
+    "stock": 35,
+    "featured": false,
+    "rating": 4.9,
+    "reviewCount": 182,
+    "colors": [
+      {
+        "name": "Saddle Tan",
+        "hex": "#A36332",
+        "images": [
+          "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Matte Espresso",
+        "hex": "#352317",
+        "images": [
+          "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "Designed for the pure minimalist. Skived to an extraordinary 4mm thickness, this front-pocket wallet carries 4 cards plus folded bills in a center thumb-accessible pouch. Fits completely imperceptibly in jeans or tailored trousers.",
+    "technicalSpecs": {
+      "material": "Full-Grain Vegetable-Tanned Cowhide",
+      "dimensions": "10.0 cm x 7.0 cm x 0.4 cm",
+      "weight": "26 grams",
+      "careInstructions": "Leather naturally softens and stretches to hold up to 6 cards over first month."
+    },
+    "features": [
+      "4 quick-access card slots (2 front, 2 back)",
+      "Center slot holds folded cash, receipts, or emergency bills",
+      "Precision curved thumb notch for effortless single-card pull",
+      "Zero lining or cardboard — 100% pure leather layers",
+      "Pocket-friendly slim form factor"
+    ]
+  },
+  {
+    "_id": "luveo-crossbody-satchel",
+    "name": "Saddle Flap Crossbody Bag",
+    "tagline": "Structured equestrian-inspired silhouette with brass turn-lock",
+    "category": "women-bags",
+    "price": 12800,
+    "discountPrice": 9999,
+    "stock": 11,
+    "featured": false,
+    "rating": 4.9,
+    "reviewCount": 38,
+    "colors": [
+      {
+        "name": "Bourbon Tan",
+        "hex": "#8B4E26",
+        "images": [
+          "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Olive Patina",
+        "hex": "#4A4D3B",
+        "images": [
+          "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "An homage to classic equestrian saddlery. Constructed with structured side gussets, full-grain waxed bridle leather, and an antique brass turn-lock clasp. The adjustable strap allows seamless transition from high shoulder to relaxed crossbody carry.",
+    "technicalSpecs": {
+      "material": "Waxed Bridle Leather & Suede Lining",
+      "dimensions": "22.5 cm x 18.0 cm x 8.0 cm",
+      "weight": "480 grams",
+      "careInstructions": "Condition flap with natural leather cream once every 6 months."
+    },
+    "features": [
+      "Solid brass turn-lock front clasp with engraved serial number",
+      "Adjustable 7-hole strap with solid brass buckle (48 cm – 58 cm drop)",
+      "Internal divider with zipped coin and lipstick compartment",
+      "External slip pocket on reverse side for iPhone or passport",
+      "Suede-lined main chamber protects sunglasses from scratches"
+    ]
+  },
+  {
+    "_id": "luveo-classic-dress-belt",
+    "name": "Formal Feather-Edge Dress Belt",
+    "tagline": "Tapered 30mm dress belt with hand-stitched border and silver buckle",
+    "category": "leather-belts",
+    "price": 4900,
+    "discountPrice": 3999,
+    "stock": 20,
+    "featured": false,
+    "rating": 4.8,
+    "reviewCount": 76,
+    "colors": [
+      {
+        "name": "Classic Black",
+        "hex": "#0D0C0B",
+        "images": [
+          "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Oxblood Burgundy",
+        "hex": "#501A24",
+        "images": [
+          "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "Tailored specifically for suit trousers and formal wear. Features a subtle domed feather-edge profile, tonal micro-stitching, and an ultra-slim satin nickel buckle for a clean, sophisticated waistline.",
+    "technicalSpecs": {
+      "material": "Aniline Calf Leather with Nubuck Backing",
+      "dimensions": "Width: 30 mm (1.18 inches), Custom sizing 30-44 inches",
+      "weight": "150 grams",
+      "careInstructions": "Keep rolled or hanging straight. Wipe with leather conditioner cloth."
+    },
+    "features": [
+      "Subtle domed feather edge contoured for formal suiting",
+      "Satin nickel-plated solid brass dress buckle",
+      "Nubuck leather backing prevents color transfer to dress shirts",
+      "Perimeter saddle stitching with 9 stitches per inch density"
+    ]
+  },
+  {
+    "_id": "luveo-leather-valet-tray",
+    "name": "Artisan Snap Leather Valet Tray",
+    "tagline": "Corner-snapping catchall tray for bedside nightstand and desk EDC",
+    "category": "accessories",
+    "price": 3500,
+    "discountPrice": 2699,
+    "stock": 30,
+    "featured": false,
+    "rating": 5.0,
+    "reviewCount": 63,
+    "colors": [
+      {
+        "name": "Cognac & Brass",
+        "hex": "#9B5A2B",
+        "images": [
+          "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Midnight Charcoal",
+        "hex": "#151515",
+        "images": [
+          "https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "The perfect home for your everyday essentials. Unsnaps completely flat to slip into your carry-on luggage; snaps securely in all four corners upon arrival at your hotel or home to hold keys, timepiece, coins, and cufflinks.",
+    "technicalSpecs": {
+      "material": "Dual-Layer Vegetable-Tanned Cowhide",
+      "dimensions": "Flat: 20 cm x 20 cm | Snapped: 15 cm x 15 cm x 4 cm",
+      "weight": "95 grams",
+      "careInstructions": "Natural patina deepens with age as keys and coins mark the hide."
+    },
+    "features": [
+      "4 heavy-duty antique brass snap buttons in corners",
+      "Packs 100% flat for effortless business travel and vacations",
+      "Dual-layered full-grain hide for rigid sidewalls when snapped",
+      "Embossed central Atelier hallmark seal"
+    ]
+  },
+  {
+    "_id": "luveo-magflap-carbon-matte",
+    "name": "MagFlap™ Carbon & Matte Edition",
+    "tagline": "Carbon fiber weave reinforcement fused with bridle leather",
+    "category": "magnetic-wallet",
+    "price": 5600,
+    "discountPrice": 4499,
+    "stock": 16,
+    "featured": false,
+    "rating": 4.9,
+    "reviewCount": 112,
+    "colors": [
+      {
+        "name": "Stealth Carbon",
+        "hex": "#181818",
+        "images": [
+          "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Gunmetal Tan",
+        "hex": "#825736",
+        "images": [
+          "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "Engineered for maximum rigidity and scratch resilience. Fuses 3K matte carbon fiber weave with full-grain oil-waxed leather. Holds 8 cards with quick magnetic thumb deployment and military-spec RFID interference immunity.",
+    "technicalSpecs": {
+      "material": "Full-Grain Cowhide with 3K Carbon Fiber Hybrid",
+      "dimensions": "10.4 cm x 7.2 cm x 1.3 cm",
+      "weight": "72 grams",
+      "careInstructions": "Water-resistant exterior. Wipe clean with damp cloth."
+    },
+    "features": [
+      "Carbon fiber reinforced faceplates resist scratches and impact",
+      "Fast magnetic flick card ejection mechanism",
+      "Integrated elastic cash band holds 10+ bills securely",
+      "Certified 13.56 MHz RFID / NFC shielding"
+    ]
+  },
+  {
+    "_id": "luveo-zippered-passport-folio",
+    "name": "All-Weather Zip Travel Folio",
+    "tagline": "Full perimeter YKK Excella brass zipper with dual passport pockets",
+    "category": "long-wallet",
+    "price": 7200,
+    "discountPrice": 5999,
+    "stock": 12,
+    "featured": false,
+    "rating": 4.8,
+    "reviewCount": 49,
+    "colors": [
+      {
+        "name": "Vintage Tobacco",
+        "hex": "#764A23",
+        "images": [
+          "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Obsidian Black",
+        "hex": "#121212",
+        "images": [
+          "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "The ultimate security folio for family or solo travel. Encased in an ultra-smooth Japanese YKK Excella brass zipper that seals foreign currency, coins, customs cards, dual passports, and flight tickets against loss.",
+    "technicalSpecs": {
+      "material": "Oil-Waxed Pull-Up Cowhide & YKK Excella Zipper",
+      "dimensions": "21.0 cm x 11.5 cm x 2.0 cm",
+      "weight": "145 grams",
+      "careInstructions": "Lightly wax zipper teeth once annually for effortless gliding."
+    },
+    "features": [
+      "Full perimeter brass zipper ensures zero contents can slide out",
+      "Holds 2 international passports simultaneously",
+      "8 card slots + expandable zippered coin pocket",
+      "Internal micro-pen loop with complimentary silver ballpoint"
+    ]
+  },
+  {
+    "_id": "luveo-key-clutch-organizer",
+    "name": "Silent Key Clutch & Carabiner",
+    "tagline": "Eliminates pocket jingle with brass bolt pivot system",
+    "category": "accessories",
+    "price": 2800,
+    "discountPrice": 2199,
+    "stock": 40,
+    "featured": false,
+    "rating": 4.9,
+    "reviewCount": 97,
+    "colors": [
+      {
+        "name": "Bourbon Tan",
+        "hex": "#8B4E26",
+        "images": [
+          "https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=800&h=800&q=80",
+          "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      },
+      {
+        "name": "Onyx Black",
+        "hex": "#101010",
+        "images": [
+          "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&h=800&q=80"
+        ]
+      }
+    ],
+    "description": "Silent, compact, and protective. Neatly encloses 2 to 7 keys inside a full-grain leather envelope, preventing key teeth from scratching your smartphone screen in pockets or bags. Includes solid brass D-ring for car key fobs.",
+    "technicalSpecs": {
+      "material": "Full-Grain Vegetable Tanned Cowhide with Brass Hardware",
+      "dimensions": "8.5 cm x 2.8 cm x 2.0 cm",
+      "weight": "42 grams",
+      "careInstructions": "Tighten brass bolt with a coin every few months to adjust key friction."
+    },
+    "features": [
+      "Accommodates 2 to 7 standard door keys inside enclosed leather sheath",
+      "Zero pocket jingle and complete scratch protection for phones",
+      "Heavy-duty brass D-ring for car key remotes and AirTags",
+      "Locking brass Chicago post with wave washers to maintain key tension"
+    ]
+  }
+]

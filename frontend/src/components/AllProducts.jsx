@@ -2,132 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import ProductCard from "./ProductCard";
-
-// Curated Leather Fallback Catalog
-const FALLBACK_LEATHER_PRODUCTS = [
-  {
-    _id: "luveo-magflap-travel",
-    name: "MagFlap™ Travel & Card Wallet",
-    category: "magnetic-wallet",
-    price: 5200,
-    discountPrice: 4199,
-    rating: 4.9,
-    reviewCount: 148,
-    stock: 15,
-    colors: [
-      {
-        name: "Cognac Tan",
-        hex: "#9B5A2B",
-        images: [
-          "https://www.waldorleather.com/cdn/shop/collections/E0127C8F-00FD-4D9A-B501-9DBC77D98CAC.jpg?v=1769830638&width=600",
-          "https://www.waldorleather.com/cdn/shop/files/travel_navy_grey_4.5.jpg?v=1752426246",
-        ],
-      },
-      { name: "Obsidian Black", hex: "#101010" },
-      { name: "Espresso Brown", hex: "#3D2817" },
-    ],
-  },
-  {
-    _id: "luveo-artisan-belt-brass",
-    name: "Artisan Solid Brass Leather Belt",
-    category: "leather-belts",
-    price: 5800,
-    discountPrice: 4699,
-    rating: 5.0,
-    reviewCount: 92,
-    stock: 12,
-    colors: [
-      {
-        name: "Dark Espresso",
-        hex: "#2B1D12",
-        images: [
-          "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1624222247344-550fb60583dc?q=80&w=600&auto=format&fit=crop",
-        ],
-      },
-      { name: "Classic Black", hex: "#111111" },
-      { name: "Saddle Tan", hex: "#A36332" },
-    ],
-  },
-  {
-    _id: "luveo-classic-bifold-8card",
-    name: "Heritage 8-Card Classic Bifold",
-    category: "men-wallets",
-    price: 4500,
-    discountPrice: 3699,
-    rating: 4.8,
-    reviewCount: 84,
-    stock: 20,
-    colors: [
-      {
-        name: "Saddle Brown",
-        hex: "#8A4F28",
-        images: [
-          "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=600&auto=format&fit=crop",
-        ],
-      },
-      { name: "Midnight Black", hex: "#0F0F10" },
-    ],
-  },
-  {
-    _id: "luveo-executive-long-wallet",
-    name: "Executive Long Passport Wallet",
-    category: "long-wallet",
-    price: 6800,
-    discountPrice: 5499,
-    rating: 4.9,
-    reviewCount: 67,
-    stock: 8,
-    colors: [
-      {
-        name: "Burnished Tan",
-        hex: "#9C6237",
-        images: [
-          "https://www.waldorleather.com/cdn/shop/collections/Untitled_design-59.png?v=1770982930&width=600",
-        ],
-      },
-      { name: "Pitch Black", hex: "#121214" },
-    ],
-  },
-  {
-    _id: "luveo-laptop-sleeve-folio",
-    name: "Full-Grain Leather Laptop Folio",
-    category: "accessories",
-    price: 8500,
-    discountPrice: 6999,
-    rating: 4.9,
-    reviewCount: 43,
-    stock: 10,
-    colors: [
-      {
-        name: "Cognac Amber",
-        hex: "#A05D2D",
-        images: [
-          "https://images.unsplash.com/photo-1611461527944-1a718332613b?q=80&w=600&auto=format&fit=crop",
-        ],
-      },
-    ],
-  },
-  {
-    _id: "luveo-pebbled-leather-tote",
-    name: "Verona Pebbled Leather Satchel",
-    category: "women-bags",
-    price: 14500,
-    discountPrice: 11999,
-    rating: 5.0,
-    reviewCount: 31,
-    stock: 6,
-    colors: [
-      {
-        name: "Caramel",
-        hex: "#B8753E",
-        images: [
-          "https://images.pexels.com/photos/23223837/pexels-photo-23223837.jpeg?auto=compress&cs=tinysrgb&w=600",
-        ],
-      },
-    ],
-  },
-];
+import DUMMY_LEATHER_PRODUCTS from "../data/products.json";
 
 const CATEGORY_NAMES = {
   "magnetic-wallet": "MagFlap™ & Magnetic Wallets",
@@ -143,8 +18,8 @@ export const AllProducts = () => {
   const [searchParams] = useSearchParams();
   const urlSearch = searchParams.get("search");
 
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [products, setProducts] = useState(DUMMY_LEATHER_PRODUCTS);
+  const [filteredProducts, setFilteredProducts] = useState(DUMMY_LEATHER_PRODUCTS);
   const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState(urlSearch || "");
@@ -182,7 +57,7 @@ export const AllProducts = () => {
       if (fetched.length > 0) {
         setProducts(fetched);
       } else {
-        let fallback = FALLBACK_LEATHER_PRODUCTS;
+        let fallback = DUMMY_LEATHER_PRODUCTS;
         if (category) {
           fallback = fallback.filter(
             (p) => (p.category || "").toLowerCase() === category.toLowerCase()
@@ -191,7 +66,7 @@ export const AllProducts = () => {
         setProducts(fallback);
       }
     } catch {
-      let fallback = FALLBACK_LEATHER_PRODUCTS;
+      let fallback = DUMMY_LEATHER_PRODUCTS;
       if (category) {
         fallback = fallback.filter(
           (p) => (p.category || "").toLowerCase() === category.toLowerCase()

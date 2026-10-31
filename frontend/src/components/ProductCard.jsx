@@ -88,35 +88,33 @@ export const ProductCard = ({ product, loading }) => {
     activeColor?.images?.[0] ||
     product?.img?.[0] ||
     product?.images?.[0] ||
-    "https://www.waldorleather.com/cdn/shop/collections/E0127C8F-00FD-4D9A-B501-9DBC77D98CAC.jpg?v=1769830638&width=600";
+    "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80";
 
-  const hasDiscount = product.price > product.discountPrice;
+  const hasDiscount = Boolean(
+    product.discountPrice && product.discountPrice < product.price
+  );
   const discountPercent = hasDiscount
     ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
     : 0;
 
   return (
     <>
-      {alert.show && (
-        <AlertMessage
-          message={alert.message}
-          type={alert.type}
-          onClose={hideAlert}
-          duration={3500}
-          showCloseButton
-        />
-      )}
+      <AlertMessage
+        message={alert.message}
+        type={alert.type}
+        visible={alert.show}
+        handleClose={hideAlert}
+      />
 
-      {/* Instant 2-Click Order Drawer */}
       <QuickOrderDrawer
         isOpen={isQuickOrderOpen}
         onClose={() => setIsQuickOrderOpen(false)}
         product={product}
-        selectedColorHex={activeColor?.hex}
+        selectedColor={activeColor}
       />
 
-      <div className="group relative flex flex-col w-full bg-white rounded-3xl p-4 sm:p-5 border border-[#E8E2D6] shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-[#D6CEBF] hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] transition-all duration-300">
-        {/* Badges Overlay */}
+      <div className="group relative bg-white rounded-3xl p-4 sm:p-5 border border-[#E8E2D6] shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.08)] hover:border-[#D6CAB7] transition-all duration-300 flex flex-col justify-between">
+        {/* Floating Badges */}
         <div className="absolute top-6 left-6 z-10 flex flex-col gap-1.5 pointer-events-none">
           {hasDiscount && discountPercent > 0 && (
             <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-[#9B5A2B] text-white px-2.5 py-1 rounded-full shadow-sm">
@@ -130,16 +128,16 @@ export const ProductCard = ({ product, loading }) => {
           )}
         </div>
 
-        {/* Product Image Stage */}
+        {/* Product Image Stage (1:1 aspect-square) */}
         <Link
           to={`/product/${product._id}`}
-          className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#FAF8F5] border border-[#F0EBE1] flex items-center justify-center p-4 group-hover:bg-[#F5F1E8] transition-colors"
+          className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#FAF8F5] border border-[#F0EBE1] flex items-center justify-center group-hover:bg-[#F5F1E8] transition-colors"
         >
           <img
             src={primaryImage}
             alt={product.name || "Leather Product"}
             loading="lazy"
-            className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         </Link>
 

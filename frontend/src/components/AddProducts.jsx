@@ -424,28 +424,39 @@ const ProductManagement = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <AdminBackLink />
+        <div className="min-h-screen bg-[#FBF9F5] text-stone-900 px-4 sm:px-8 py-8">
+            <div className="max-w-7xl mx-auto space-y-6">
+                <AdminBackLink />
 
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Product Management</h1>
-                {!showForm && (
-                    <button
-                        onClick={handleAddNew}
-                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                    >
-                        Add New Product
-                    </button>
-                )}
-                {showForm && (
-                    <button
-                        onClick={handleCancel}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                    >
-                        Cancel
-                    </button>
-                )}
-            </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-stone-200">
+                    <div>
+                        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#9B5A2B] mb-1">
+                            <span>Catalog Inventory & Drops</span>
+                        </div>
+                        <h1 className="font-serif text-3xl font-medium tracking-tight text-stone-900">
+                            Atelier Product Management
+                        </h1>
+                        <p className="text-xs text-stone-500 font-light mt-0.5">
+                            Commission new leather creations, configure multi-tone hides, and update stock.
+                        </p>
+                    </div>
+
+                    {!showForm ? (
+                        <button
+                            onClick={handleAddNew}
+                            className="px-5 py-2.5 bg-[#0D0C0B] text-white rounded-xl text-xs font-medium tracking-wide hover:bg-stone-800 transition shadow"
+                        >
+                            + Commission New Piece
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleCancel}
+                            className="px-5 py-2.5 bg-stone-200 text-stone-700 rounded-xl text-xs font-medium tracking-wide hover:bg-stone-300 transition"
+                        >
+                            Cancel Commission
+                        </button>
+                    )}
+                </div>
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md mb-8">
@@ -798,54 +809,76 @@ const ProductManagement = () => {
                     <div className="pt-4">
                         <button
                             type="submit"
-                            className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="w-full py-3.5 bg-[#0D0C0B] text-[#FBF9F5] rounded-xl font-medium tracking-wide hover:bg-stone-800 transition shadow"
                             disabled={isSubmitting}
                         >
                             {isSubmitting
-                                ? (editingProductId ? 'Updating Product...' : 'Adding Product...')
-                                : (editingProductId ? 'Update Product' : 'Add Product')}
+                                ? (editingProductId ? 'Updating Atelier Piece...' : 'Registering Piece...')
+                                : (editingProductId ? 'Update Atelier Piece' : 'Publish to Atelier Vault')}
                         </button>
                     </div>
                 </form>
             )}
 
             {/* Product List */}
-            <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-4">Product List</h2>
+            <div className="mt-8 space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="font-serif text-2xl font-medium text-stone-900">Atelier Catalog Pieces</h2>
+                        <p className="text-xs text-stone-500 font-light">Total {products.length} registered creations</p>
+                    </div>
+                </div>
 
                 {loading ? (
-                    <p className="text-center py-4">Loading products...</p>
+                    <div className="bg-white rounded-3xl p-12 text-center border border-stone-200">
+                        <div className="w-8 h-8 border-3 border-[#9B5A2B] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                        <p className="text-xs text-stone-500">Loading catalog...</p>
+                    </div>
                 ) : products.length === 0 ? (
-                    <p className="text-center py-4">No products found.</p>
+                    <div className="bg-white rounded-3xl p-12 text-center border border-stone-200">
+                        <p className="text-sm text-stone-500">No products found in catalog.</p>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {products.map((product) => (
                             <div
                                 key={product._id}
-                                className="bg-white rounded-xl shadow-md overflow-hidden border hover:shadow-lg transition duration-300"
+                                className="bg-white rounded-3xl shadow-sm overflow-hidden border border-stone-200 hover:shadow-md transition flex flex-col"
                             >
-                                <img
-                                    src={product.colors?.[0]?.images?.[0] || '/placeholder.png'}
-                                    alt={product.name}
-                                    className="w-full h-48 object-cover"
-                                />
-                                <div className="p-4">
-                                    <h1 className="text-lg font-semibold text-gray-800">{product.name}</h1>
-                                    <p className="text-sm text-gray-500 mb-2">{product.category}</p>
-                                    <p className="text-xs font-medium mb-2 text-indigo-600">
-                                        {product.featured ? 'Featured' : 'Not featured'}
-                                    </p>
-                                    <p className="text-sm font-medium text-gray-900 mb-4">${product.price}</p>
-                                    <div className="flex justify-between">
+                                <div className="h-44 bg-stone-100 overflow-hidden relative">
+                                    <img
+                                        src={product.colors?.[0]?.images?.[0] || 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&q=80&w=400'}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                                    />
+                                    {product.featured && (
+                                        <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-widest uppercase bg-[#0D0C0B] text-amber-200 shadow">
+                                            Featured
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="p-4 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <span className="text-[10px] font-mono uppercase tracking-wider text-stone-400 block">
+                                            {product.category || 'Atelier Goods'}
+                                        </span>
+                                        <h3 className="font-serif text-sm font-semibold text-stone-900 line-clamp-1 mt-0.5">
+                                            {product.name}
+                                        </h3>
+                                        <p className="font-serif text-sm font-bold text-[#9B5A2B] mt-1">
+                                            PKR {Number(product.discountPrice || product.price || 0).toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2 pt-3 mt-3 border-t border-stone-100">
                                         <button
                                             onClick={() => handleEdit(product)}
-                                            className="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+                                            className="flex-1 py-1.5 text-xs font-medium text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-xl transition"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => deleteProduct(product._id)}
-                                            className="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50"
+                                            className="px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-xl transition"
                                         >
                                             Delete
                                         </button>
@@ -857,6 +890,7 @@ const ProductManagement = () => {
                 )}
             </div>
         </div>
+    </div>
     );
 };
 
