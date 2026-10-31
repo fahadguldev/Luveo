@@ -21,6 +21,7 @@ import Reviews from "./random/Reviews";
 import AlertMessage from "./Alert";
 import QuickOrderDrawer from "./QuickOrderDrawer";
 import { setColorSelection } from "../store/cartSlice";
+import DUMMY_LEATHER_PRODUCTS from "../data/products.json";
 
 export const ProductDisplay = () => {
   const { id } = useParams();
@@ -63,16 +64,40 @@ export const ProductDisplay = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/product/get-product/${id}`
       );
-      const productData = response.data.product;
-      setProduct(productData);
-      if (productData?.colors?.length > 0) {
-        setSelectedColor(productData.colors[0].hex);
+      const productData = response.data?.product;
+      if (productData) {
+        setProduct(productData);
+        if (productData?.colors?.length > 0) {
+          setSelectedColor(productData.colors[0].hex);
+        }
+        setError(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
     } catch {
-      setError("Failed to load product data");
-      setLoading(false);
+      // Backend unavailable or 404 - fallback to dummy catalog
     }
+
+    const dummy = DUMMY_LEATHER_PRODUCTS.find((p) => p._id === id);
+    if (dummy) {
+      setProduct(dummy);
+      if (dummy.colors?.length > 0) {
+        setSelectedColor(dummy.colors[0].hex);
+      }
+      setError(null);
+    } else {
+      const fallback = DUMMY_LEATHER_PRODUCTS[0];
+      if (fallback) {
+        setProduct(fallback);
+        if (fallback.colors?.length > 0) {
+          setSelectedColor(fallback.colors[0].hex);
+        }
+        setError(null);
+      } else {
+        setError("Failed to load product data");
+      }
+    }
+    setLoading(false);
   }, [id]);
 
   useEffect(() => {
@@ -255,7 +280,7 @@ export const ProductDisplay = () => {
           {/* ── Left: Image Gallery ── */}
           <div className="flex flex-col gap-4">
             {/* Main Stage Image */}
-            <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-white border border-[#E8E2D6] p-6 sm:p-10 flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+            <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-white border border-[#E8E2D6] flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
               {/* Badges */}
               <div className="absolute top-5 left-5 z-10 flex flex-col gap-2">
                 {hasDiscount && discountPercent > 0 && (
@@ -300,7 +325,7 @@ export const ProductDisplay = () => {
                 </>
               )}
 
-              {/* Main Animated Photo */}
+              {/* Main Animated Photo (1:1 aspect-square filled) */}
               <AnimatePresence mode="wait">
                 <motion.img
                   key={`${selectedColor}-${selectedImageIndex}`}
@@ -310,7 +335,7 @@ export const ProductDisplay = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.25 }}
-                  className="w-full h-full object-contain mix-blend-multiply"
+                  className="w-full h-full object-cover"
                 />
               </AnimatePresence>
             </div>
@@ -323,7 +348,7 @@ export const ProductDisplay = () => {
                     key={idx}
                     type="button"
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative w-20 h-20 rounded-2xl overflow-hidden bg-white p-1.5 border transition-all shrink-0 cursor-pointer ${
+                    className={`relative w-20 h-20 rounded-2xl overflow-hidden bg-white p-1 border transition-all shrink-0 cursor-pointer ${
                       selectedImageIndex === idx
                         ? "border-[#0D0C0B] ring-2 ring-[#0D0C0B]/20 scale-105"
                         : "border-[#E8E2D6] opacity-70 hover:opacity-100"
@@ -332,7 +357,7 @@ export const ProductDisplay = () => {
                     <img
                       src={img}
                       alt={`Thumbnail ${idx}`}
-                      className="w-full h-full object-contain mix-blend-multiply"
+                      className="w-full h-full object-cover rounded-xl"
                     />
                   </button>
                 ))}
