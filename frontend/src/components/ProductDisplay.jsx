@@ -1,808 +1,583 @@
-// import { useState, useEffect, useCallback } from "react";
-// import { useNavigate, useParams } from "react-router-dom";
-// import { useDispatch } from "react-redux";
-// import axios from "axios";
-// import { motion, AnimatePresence } from 'framer-motion';
-// import { FaShoppingCart, FaExpand, FaCheck, FaAngleUp, FaAngleDown } from 'react-icons/fa';
-
-// import Reviews from "./random/Reviews";
-// import AlertMessage from "./Alert";
-// import { setColorSelection } from "../store/cartSlice";
-
-// const ProductDisplay = () => {
-//     const { id } = useParams();
-//     const navigate = useNavigate();
-//     const dispatch = useDispatch();
-
-//     const [product, setProduct] = useState(null);
-//     const [selectedColor, setSelectedColor] = useState(null);
-//     const [quantity, setQuantity] = useState(1);
-//     const [isFullScreenImage, setIsFullScreenImage] = useState(false);
-
-//     // Status states
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState(null);
-//     const [userId, setUserId] = useState(null);
-//     const [isAddingToCart, setIsAddingToCart] = useState(false);
-//     const [isBuyingNow, setIsBuyingNow] = useState(false);
-
-//     // Image gallery state
-//     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
-//     // Alert state
-//     const [alertProps, setAlertProps] = useState({ message: "", type: "success", visible: false });
-
-//     // Initialize user
-//     useEffect(() => {
-//         const storedUser = localStorage.getItem("user");
-//         if (storedUser) {
-//             try {
-//                 const user = JSON.parse(storedUser);
-//                 setUserId(user?.id || user?._id || "");
-//             } catch (e) { console.error(e); }
-//         }
-//     }, []);
-
-//     // Fetch product
-//     const getProduct = useCallback(async () => {
-//         try {
-//             setLoading(true);
-//             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/product/get-product/${id}`);
-//             const productData = response.data.product;
-//             setProduct(productData);
-//             if(productData.colors?.length > 0) setSelectedColor(productData.colors[0].hex);
-//             setLoading(false);
-//         } catch (error) {
-//             console.error("Error fetching product:", error);
-//             setError("Failed to load product data");
-//             setLoading(false);
-//         }
-//     }, [id]);
-
-//     useEffect(() => { if (id) getProduct(); }, [id, getProduct]);
-
-//     // Scroll to top when product loads
-//     useEffect(() => {
-//         window.scrollTo(0, 0);
-//     }, [id]);
-
-//     // Reset image index when color changes
-//     useEffect(() => {
-//         setSelectedImageIndex(0);
-//     }, [selectedColor]);
-
-//     // Helpers
-//     const showNotification = (message, type = "success") => setAlertProps({ message, type, visible: true });
-//     const handleCloseAlert = () => setAlertProps(prev => ({ ...prev, visible: false }));
-
-//     const ensureUserId = async () => {
-//         if (userId) return userId;
-
-//         try {
-//             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
-//             const user = response.data?.newUser;
-//             const id = user?.id || user?._id;
-
-//             if (!id) throw new Error("Unable to create guest account");
-
-//             localStorage.setItem("user", JSON.stringify(user));
-//             setUserId(id);
-//             return id;
-//         } catch (error) {
-//             showNotification("Error creating guest account", "error");
-//             throw error;
-//         }
-//     };
-
-//     const addToCart = async (productId, buyNow = false) => {
-//         if (buyNow) setIsBuyingNow(true); else setIsAddingToCart(true);
-
-//         try {
-//             const ensuredUserId = await ensureUserId();
-//             await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId: ensuredUserId });
-
-//             // Store the selected color in Redux so checkout can read it
-//             const selectedColorObj = product.colors?.find(c => c.hex === selectedColor);
-//             if (selectedColorObj) {
-//                 dispatch(setColorSelection({
-//                     productId,
-//                     color: { name: selectedColorObj.name, hex: selectedColorObj.hex }
-//                 }));
-//             }
-
-//             showNotification(
-//                 buyNow ? "Product purchased successfully! Redirecting..." : "Added to cart successfully!",
-//                 "success"
-//             );
-//             navigate(buyNow ? '/checkout' : '/profile');
-//         } catch (error) {
-//             showNotification(error.response?.data?.message || "Error adding to cart", "error");
-//         } finally {
-//             setIsAddingToCart(false); setIsBuyingNow(false);
-//         }
-//     };
-
-//     // Images of the currently selected color
-//     const currentImages = product?.colors?.find(c => c.hex === selectedColor)?.images || [];
-
-//     const handlePrevImage = () => {
-//        setSelectedImageIndex(prev => prev > 0 ? prev - 1 : currentImages.length - 1);
-//     };
-
-//     const handleNextImage = () => {
-//        setSelectedImageIndex(prev => prev < currentImages.length - 1 ? prev + 1 : 0);
-//     };
-
-//     if (loading) return <div className="min-h-screen flex items-center justify-center p-8"><div className="w-12 h-12 border-2 border-t-black border-gray-200 rounded-full animate-spin"></div></div>;
-//     if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 font-sans tracking-widest uppercase">{error}</div>;
-//     if (!product) return <div className="min-h-screen flex items-center justify-center font-sans tracking-widest uppercase text-gray-500">Product not found</div>;
-
-//     const discountPercentage = Math.round(((product.price - product.discountPrice) / product.price) * 100);
-
-//     return (
-//         <div className="bg-[#f7f7f7] min-h-screen pb-20 pt-32 md:pt-36">
-//             {/* Alerts & Modals */}
-//             {alertProps.visible && (
-//                 <AlertMessage message={alertProps.message} type={alertProps.type} onClose={handleCloseAlert} duration={4000} showCloseButton />
-//             )}
-
-//             {/* Main Product Layout */}
-//             <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-[clamp(40px,6vw,100px)] px-[clamp(20px,4vw,60px)] py-10 items-start">
-
-//                 {/* ── Left Column: Media Gallery ── */}
-//                 <div className="flex gap-6 h-[calc(100vh-120px)] sticky top-32 md:top-40">
-
-//                     {/* Vertical Thumbnails */}
-//                     <div className="flex flex-col gap-3 w-20 flex-shrink-0">
-//                         <button onClick={handlePrevImage} className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity">
-//                             <FaAngleUp size={24} />
-//                         </button>
-
-//                         <div className="flex flex-col gap-2.5 flex-1 overflow-y-auto hide-scrollbar">
-//                            {currentImages.map((img, idx) => (
-//                                <button
-//                                   key={idx}
-//                                   onClick={() => setSelectedImageIndex(idx)}
-//                                   className={`w-full aspect-square bg-white p-2 rounded-md transition border ${selectedImageIndex === idx ? "border-[#0f0f0f]" : "border-[#e5e5e5] hover:border-gray-400"}`}
-//                                >
-//                                    <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-contain" />
-//                                </button>
-//                            ))}
-//                         </div>
-
-//                         <button onClick={handleNextImage} className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity">
-//                             <FaAngleDown size={24} />
-//                         </button>
-//                     </div>
-
-//                     {/* Main Stage */}
-//                     <div className="flex-1 bg-white rounded-2xl relative overflow-hidden flex items-center justify-center p-10 border border-black/5">
-//                         <AnimatePresence mode="wait">
-//                             <motion.img
-//                                 key={`${selectedColor}-${selectedImageIndex}`}
-//                                 initial={{ opacity: 0, x: 20 }}
-//                                 animate={{ opacity: 1, x: 0 }}
-//                                 exit={{ opacity: 0, x: -20 }}
-//                                 transition={{ duration: 0.3 }}
-//                                 src={currentImages[selectedImageIndex]}
-//                                 alt={product.name}
-//                                 className="w-full h-full object-contain max-h-[75vh]"
-//                             />
-//                         </AnimatePresence>
-
-//                         <button
-//                             onClick={() => setIsFullScreenImage(true)}
-//                             className="absolute top-4 right-4 bg-white border border-[#e5e5e5] p-3 rounded-full text-[#0f0f0f] shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:bg-gray-50 transition"
-//                         >
-//                             <FaExpand />
-//                         </button>
-//                     </div>
-//                 </div>
-
-
-//                 {/* ── Right Column: Sticky Product Info ── */}
-//                 <div className="pt-5">
-//                     <div className="bg-white rounded-2xl px-[clamp(24px,4vw,40px)] py-[clamp(24px,4vw,40px)] shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative">
-
-//                         {/* SALE Badge */}
-//                         {product.price > product.discountPrice && (
-//                             <div className="absolute -top-3 right-8 bg-[#e53945] text-white px-3.5 py-1.5 rounded-full font-sans text-sm font-bold tracking-[0.05em]">
-//                                 SALE
-//                             </div>
-//                         )}
-
-//                         {/* Reviews summary */}
-//                         <div className="flex items-center gap-2 mb-4">
-//                             <div className="flex gap-0.5 text-black text-base">
-//                                 {Array(5).fill(0).map((_, i) => <span key={i}>★</span>)}
-//                             </div>
-//                             <span className="font-sans text-xs text-[#7a7a7a] underline cursor-pointer">
-//                                 30 Reviews
-//                             </span>
-//                         </div>
-
-//                         {/* Title & Tagline */}
-//                         <h1 className="font-serif text-[clamp(2rem,3vw,2.5rem)] font-extrabold text-[#0f0f0f] mb-2 leading-tight">
-//                             {product.name}
-//                         </h1>
-//                         <p className="font-sans text-base text-[#7a7a7a] mb-6">
-//                             {product.tagline}
-//                         </p>
-
-//                         {/* Price */}
-//                         <div className="flex items-baseline gap-4 mb-8">
-//                             <span className="font-sans text-3xl font-extrabold text-[#0f0f0f]">
-//                                 Rs.{product.discountPrice?.toLocaleString()}
-//                             </span>
-//                             {product.price > product.discountPrice && (
-//                                 <span className="font-sans text-xl font-semibold text-[#bdbdbd] line-through">
-//                                     Rs.{product.price?.toLocaleString()}
-//                                 </span>
-//                             )}
-//                         </div>
-
-//                         {/* Color Selector */}
-//                         {product.colors?.length > 0 && (
-//                             <div className="mb-8">
-//                                 <p className="font-sans text-sm font-semibold mb-3 text-[#0f0f0f]">
-//                                     Color: <span className="font-normal text-[#7a7a7a]">{product.colors.find(c => c.hex === selectedColor)?.name}</span>
-//                                 </p>
-//                                 <div className="flex gap-3">
-//                                     {product.colors.map(color => (
-//                                         <button
-//                                             key={color._id}
-//                                             onClick={() => setSelectedColor(color.hex)}
-//                                             className={`w-9 h-9 rounded-full border-2 border-white transition outline ${selectedColor === color.hex ? "outline-2 outline-[#0f0f0f]" : "outline-1 outline-[#e5e5e5] hover:outline-gray-400"}`}
-//                                             style={{ background: color.hex }}
-//                                             title={color.name}
-//                                         />
-//                                     ))}
-//                                 </div>
-//                             </div>
-//                         )}
-
-//                         {/* Fake Stock Indicator (Matches Waldor styling) */}
-//                         <div className="mb-8">
-//                             <p className="font-sans text-sm font-bold italic text-[#e53945] mb-2">
-//                                 {product.stock > 0 ? `${Math.min(product.stock, 18)} in stock` : "Out of stock"}
-//                             </p>
-//                             <div className="h-1 bg-[#e0e0e0] w-full rounded overflow-hidden">
-//                                 <div className={`h-full bg-[#4CAF50] ${product.stock > 0 ? "w-[70%]" : "w-0"}`} />
-//                             </div>
-//                         </div>
-
-//                         {/* Action Buttons */}
-//                         <div className="flex flex-col gap-4 mb-8">
-//                             <button
-//                                 onClick={() => addToCart(product._id, false)}
-//                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
-//                                 className="w-full py-4 rounded-lg bg-[#0f0f0f] text-white font-sans text-base font-bold transition hover:bg-[#1a1a1a] disabled:opacity-70 disabled:cursor-not-allowed"
-//                             >
-//                                 {isAddingToCart ? "Adding..." : "Add To Cart"}
-//                             </button>
-
-//                             <button
-//                                 onClick={() => addToCart(product._id, true)}
-//                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
-//                                 className="w-full py-4 rounded-lg bg-gradient-to-b from-[#f5f5f5] to-[#e0e0e0] text-[#0f0f0f] font-sans text-base font-bold border border-[#d4d4d4] transition hover:from-[#ebebeb] hover:to-[#d5d5d5] disabled:opacity-70 disabled:cursor-not-allowed"
-//                             >
-//                                 {isBuyingNow ? "Processing..." : "Buy It Now"}
-//                             </button>
-//                         </div>
-
-//                         {/* Features / Pitch */}
-//                         <p className="font-sans text-sm text-[#0f0f0f] leading-6 mb-6">
-//                             The simplicity paradox — do less, deliver more. {product.tagline} Perfects the user flow and integrates seamlessly into your daily carry.
-//                         </p>
-
-//                         <a href="#product-details" className="font-sans text-sm text-[#0f0f0f] underline font-semibold">
-//                             Show More
-//                         </a>
-//                     </div>
-//                 </div>
-//             </div>
-
-//             <div id="product-details" className="py-10" />
-
-//             {/* Bottom Content Area */}
-//             <div className="max-w-[1080px] mx-auto px-[clamp(20px,4vw,40px)]">
-
-//                 {/* Product Overview & Specs Accordion style */}
-//                 <div className="bg-white rounded-2xl p-10 mb-14 border border-[#e5e5e5]">
-//                      <h2 className="font-serif text-[1.8rem] font-bold mb-6 text-[#0f0f0f]">Features & Specs</h2>
-//                      <p className="font-sans text-base leading-7 text-[#7a7a7a] mb-8">
-//                          {product.description}
-//                      </p>
-
-//                      {product.technicalSpecs && Object.keys(product.technicalSpecs).length > 0 && (
-//                          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 border-t border-[#e5e5e5] pt-8">
-//                              {Object.entries(product.technicalSpecs).map(([key, value]) => (
-//                                  <div key={key}>
-//                                      <p className="font-sans text-xs font-bold text-[#0f0f0f] capitalize mb-1">
-//                                          {key.replace(/([A-Z])/g, ' $1')}
-//                                      </p>
-//                                      <p className="font-sans text-sm text-[#7a7a7a]">
-//                                          {value}
-//                                      </p>
-//                                  </div>
-//                              ))}
-//                          </div>
-//                      )}
-//                 </div>
-
-//                 {/* Reviews Section */}
-//                 <Reviews selectedProduct={product.name}/>
-//             </div>
-
-//             {/* Full Screen Image Modal */}
-//             {isFullScreenImage && (
-//                 <div className="fixed inset-0 bg-white/95 z-[1000] flex items-center justify-center p-10">
-//                     <button
-//                         className="absolute top-6 right-6 bg-transparent border-none text-3xl cursor-pointer text-[#0f0f0f]"
-//                         onClick={() => setIsFullScreenImage(false)}
-//                     >
-//                         ×
-//                     </button>
-//                     <img
-//                         src={currentImages[selectedImageIndex]}
-//                         alt={product.name}
-//                         className="max-w-full max-h-full object-contain"
-//                     />
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-// export default ProductDisplay;
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import axios from "axios";
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaExpand, FaAngleUp, FaAngleDown, FaAngleLeft, FaAngleRight, FaTimes } from 'react-icons/fa';
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  X,
+  Star,
+  ShieldCheck,
+  Truck,
+  Zap,
+  ShoppingBag,
+  Check,
+  RotateCcw,
+} from "lucide-react";
 
 import Reviews from "./random/Reviews";
 import AlertMessage from "./Alert";
+import QuickOrderDrawer from "./QuickOrderDrawer";
 import { setColorSelection } from "../store/cartSlice";
 
-const ProductDisplay = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+export const ProductDisplay = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-    const [product, setProduct] = useState(null);
-    const [selectedColor, setSelectedColor] = useState(null);
-    const [isFullScreenImage, setIsFullScreenImage] = useState(false);
+  const [product, setProduct] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isFullScreenImage, setIsFullScreenImage] = useState(false);
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [userId, setUserId] = useState(null);
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
-    const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addedSuccess, setAddedSuccess] = useState(false);
+  const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
 
-    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [alertProps, setAlertProps] = useState({ message: "", type: "success", visible: false });
+  const [alertProps, setAlertProps] = useState({
+    message: "",
+    type: "success",
+    visible: false,
+  });
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            try {
-                const user = JSON.parse(storedUser);
-                setUserId(user?.id || user?._id || "");
-            } catch (e) { console.error(e); }
-        }
-    }, []);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setUserId(user?.id || user?._id || "");
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
 
-    const getProduct = useCallback(async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/product/get-product/${id}`);
-            const productData = response.data.product;
-            setProduct(productData);
-            if (productData.colors?.length > 0) setSelectedColor(productData.colors[0].hex);
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching product:", error);
-            setError("Failed to load product data");
-            setLoading(false);
-        }
-    }, [id]);
+  const getProduct = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/product/get-product/${id}`
+      );
+      const productData = response.data.product;
+      setProduct(productData);
+      if (productData?.colors?.length > 0) {
+        setSelectedColor(productData.colors[0].hex);
+      }
+      setLoading(false);
+    } catch {
+      setError("Failed to load product data");
+      setLoading(false);
+    }
+  }, [id]);
 
-    useEffect(() => { if (id) getProduct(); }, [id, getProduct]);
+  useEffect(() => {
+    if (id) getProduct();
+  }, [id, getProduct]);
 
-    useEffect(() => { window.scrollTo(0, 0); }, [id]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
-    useEffect(() => { setSelectedImageIndex(0); }, [selectedColor]);
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [selectedColor]);
 
-    const showNotification = (message, type = "success") => setAlertProps({ message, type, visible: true });
-    const handleCloseAlert = () => setAlertProps(prev => ({ ...prev, visible: false }));
+  const showNotification = (message, type = "success") =>
+    setAlertProps({ message, type, visible: true });
+  const handleCloseAlert = () =>
+    setAlertProps((prev) => ({ ...prev, visible: false }));
 
-    const ensureUserId = async () => {
-        if (userId) return userId;
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
-            const user = response.data?.newUser;
-            const id = user?.id || user?._id;
-            if (!id) throw new Error("Unable to create guest account");
-            localStorage.setItem("user", JSON.stringify(user));
-            setUserId(id);
-            return id;
-        } catch (error) {
-            showNotification("Error creating guest account", "error");
-            throw error;
-        }
-    };
+  const ensureUserId = async () => {
+    if (userId) return userId;
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`
+      );
+      const user = response.data?.newUser;
+      const uid = user?.id || user?._id;
+      if (!uid) throw new Error("Unable to create guest account");
+      localStorage.setItem("user", JSON.stringify(user));
+      setUserId(uid);
+      return uid;
+    } catch (e) {
+      showNotification("Error creating guest account", "error");
+      throw e;
+    }
+  };
 
-    const addToCart = async (productId, buyNow = false) => {
-        if (buyNow) setIsBuyingNow(true); else setIsAddingToCart(true);
-        try {
-            const ensuredUserId = await ensureUserId();
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId: ensuredUserId });
-            const selectedColorObj = product.colors?.find(c => c.hex === selectedColor);
-            if (selectedColorObj) {
-                dispatch(setColorSelection({
-                    productId,
-                    color: { name: selectedColorObj.name, hex: selectedColorObj.hex }
-                }));
-            }
-            showNotification(
-                buyNow ? "Product purchased successfully! Redirecting..." : "Added to cart successfully!",
-                "success"
-            );
-            navigate(buyNow ? '/checkout' : '/profile');
-        } catch (error) {
-            showNotification(error.response?.data?.message || "Error adding to cart", "error");
-        } finally {
-            setIsAddingToCart(false); setIsBuyingNow(false);
-        }
-    };
+  const addToCart = async (productId, redirect = false) => {
+    setIsAddingToCart(true);
+    try {
+      const ensuredUserId = await ensureUserId();
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`,
+        { productId, userId: ensuredUserId }
+      );
 
-    const currentImages = product?.colors?.find(c => c.hex === selectedColor)?.images || [];
+      const selectedColorObj = product.colors?.find(
+        (c) => c.hex === selectedColor
+      );
+      if (selectedColorObj) {
+        dispatch(
+          setColorSelection({
+            productId,
+            color: { name: selectedColorObj.name, hex: selectedColorObj.hex },
+          })
+        );
+      }
+      showNotification("Added to your shopping cart!", "success");
+      setAddedSuccess(true);
+      setTimeout(() => setAddedSuccess(false), 2500);
+      window.dispatchEvent(new Event("cart-updated"));
 
-    const handlePrevImage = () => setSelectedImageIndex(prev => prev > 0 ? prev - 1 : currentImages.length - 1);
-    const handleNextImage = () => setSelectedImageIndex(prev => prev < currentImages.length - 1 ? prev + 1 : 0);
+      if (redirect) {
+        navigate("/checkout");
+      }
+    } catch (err) {
+      showNotification(
+        err.response?.data?.message || "Error adding to cart",
+        "error"
+      );
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center p-8">
-            <div className="w-12 h-12 border-2 border-t-black border-gray-200 rounded-full animate-spin" />
-        </div>
-    );
-    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 font-sans tracking-widest uppercase">{error}</div>;
-    if (!product) return <div className="min-h-screen flex items-center justify-center font-sans tracking-widest uppercase text-gray-500">Product not found</div>;
-
-    const discountPercentage = Math.round(((product.price - product.discountPrice) / product.price) * 100);
-
+  if (loading) {
     return (
-        <div className="bg-[#f7f7f7] min-h-screen pb-20 pt-24 md:pt-32 lg:pt-36">
-
-            {alertProps.visible && (
-                <AlertMessage message={alertProps.message} type={alertProps.type} onClose={handleCloseAlert} duration={4000} showCloseButton />
-            )}
-
-            {/* ── Main Product Layout ── */}
-            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-[clamp(20px,4vw,60px)] py-6 md:py-10">
-                <div className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-6 md:gap-[clamp(32px,5vw,80px)] items-start">
-
-                    {/* ── Left Column: Media Gallery ── */}
-                    <div>
-
-                        {/* ─ Mobile Layout: Main image with side nav arrows ─ */}
-                        <div className="md:hidden">
-                            <div className="relative bg-white rounded-2xl overflow-hidden flex items-center justify-center p-6 border border-black/5 aspect-square">
-                                <AnimatePresence mode="wait">
-                                    <motion.img
-                                        key={`${selectedColor}-${selectedImageIndex}`}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{ duration: 0.25 }}
-                                        src={currentImages[selectedImageIndex]}
-                                        alt={product.name}
-                                        className="w-full h-full object-contain"
-                                    />
-                                </AnimatePresence>
-
-                                {/* Prev / Next arrows */}
-                                {currentImages.length > 1 && (
-                                    <>
-                                        <button
-                                            onClick={handlePrevImage}
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white border border-[#e5e5e5] p-2.5 rounded-full shadow-sm text-[#0f0f0f] active:scale-95 transition"
-                                        >
-                                            <FaAngleLeft size={16} />
-                                        </button>
-                                        <button
-                                            onClick={handleNextImage}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white border border-[#e5e5e5] p-2.5 rounded-full shadow-sm text-[#0f0f0f] active:scale-95 transition"
-                                        >
-                                            <FaAngleRight size={16} />
-                                        </button>
-                                    </>
-                                )}
-
-                                {/* Expand button */}
-                                <button
-                                    onClick={() => setIsFullScreenImage(true)}
-                                    className="absolute top-3 right-3 bg-white border border-[#e5e5e5] p-2.5 rounded-full text-[#0f0f0f] shadow-sm active:scale-95 transition"
-                                >
-                                    <FaExpand size={14} />
-                                </button>
-                            </div>
-
-                            {/* Dot indicator */}
-                            {currentImages.length > 1 && (
-                                <div className="flex justify-center gap-1.5 mt-3">
-                                    {currentImages.map((_, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => setSelectedImageIndex(idx)}
-                                            className={`rounded-full transition-all ${selectedImageIndex === idx ? "w-4 h-1.5 bg-[#0f0f0f]" : "w-1.5 h-1.5 bg-[#d0d0d0]"}`}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Horizontal thumbnail strip */}
-                            {currentImages.length > 1 && (
-                                <div className="flex gap-2.5 mt-3 overflow-x-auto pb-1 hide-scrollbar">
-                                    {currentImages.map((img, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => setSelectedImageIndex(idx)}
-                                            className={`flex-shrink-0 w-16 h-16 bg-white p-1.5 rounded-lg border transition ${selectedImageIndex === idx ? "border-[#0f0f0f]" : "border-[#e5e5e5]"}`}
-                                        >
-                                            <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-contain" />
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ─ Desktop Layout: Vertical thumbnails + sticky stage ─ */}
-                        <div className="hidden md:flex gap-4 lg:gap-6 sticky top-32 lg:top-40" style={{ height: 'calc(100vh - 160px)' }}>
-
-                            {/* Vertical Thumbnails */}
-                            <div className="flex flex-col gap-3 w-16 lg:w-20 flex-shrink-0">
-                                <button
-                                    onClick={handlePrevImage}
-                                    className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity flex justify-center"
-                                >
-                                    <FaAngleUp size={20} />
-                                </button>
-
-                                <div className="flex flex-col gap-2 flex-1 overflow-y-auto hide-scrollbar">
-                                    {currentImages.map((img, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => setSelectedImageIndex(idx)}
-                                            className={`w-full aspect-square bg-white p-1.5 lg:p-2 rounded-md transition border ${selectedImageIndex === idx ? "border-[#0f0f0f]" : "border-[#e5e5e5] hover:border-gray-400"}`}
-                                        >
-                                            <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-contain" />
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <button
-                                    onClick={handleNextImage}
-                                    className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity flex justify-center"
-                                >
-                                    <FaAngleDown size={20} />
-                                </button>
-                            </div>
-
-                            {/* Main Stage */}
-                            <div className="flex-1 bg-white rounded-2xl relative overflow-hidden flex items-center justify-center p-6 lg:p-10 border border-black/5">
-                                <AnimatePresence mode="wait">
-                                    <motion.img
-                                        key={`${selectedColor}-${selectedImageIndex}`}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{ duration: 0.3 }}
-                                        src={currentImages[selectedImageIndex]}
-                                        alt={product.name}
-                                        className="w-full h-full object-contain max-h-[70vh]"
-                                    />
-                                </AnimatePresence>
-
-                                <button
-                                    onClick={() => setIsFullScreenImage(true)}
-                                    className="absolute top-4 right-4 bg-white border border-[#e5e5e5] p-3 rounded-full text-[#0f0f0f] shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:bg-gray-50 transition"
-                                >
-                                    <FaExpand />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ── Right Column: Product Info ── */}
-                    <div className="pt-0 md:pt-5">
-                        <div className="bg-white rounded-2xl px-5 py-6 sm:px-7 sm:py-8 lg:px-[clamp(24px,4vw,40px)] lg:py-[clamp(24px,4vw,40px)] shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative">
-
-                            {/* SALE Badge */}
-                            {product.price > product.discountPrice && (
-                                <div className="absolute -top-3 right-6 sm:right-8 bg-[#e53945] text-white px-3 py-1.5 rounded-full font-sans text-xs sm:text-sm font-bold tracking-[0.05em]">
-                                    SALE
-                                </div>
-                            )}
-
-                            {/* Reviews summary */}
-                            <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                                <div className="flex gap-0.5 text-black text-sm sm:text-base">
-                                    {Array(5).fill(0).map((_, i) => <span key={i}>★</span>)}
-                                </div>
-                                <span className="font-sans text-xs text-[#7a7a7a] underline cursor-pointer">30 Reviews</span>
-                            </div>
-
-                            {/* Title & Tagline */}
-                            <h1 className="font-serif text-[clamp(1.6rem,5vw,2.5rem)] font-extrabold text-[#0f0f0f] mb-2 leading-tight">
-                                {product.name}
-                            </h1>
-                            <p className="font-sans text-sm sm:text-base text-[#7a7a7a] mb-5 sm:mb-6">
-                                {product.tagline}
-                            </p>
-
-                            {/* Price */}
-                            <div className="flex items-baseline gap-3 sm:gap-4 mb-6 sm:mb-8">
-                                <span className="font-sans text-2xl sm:text-3xl font-extrabold text-[#0f0f0f]">
-                                    Rs.{product.discountPrice?.toLocaleString()}
-                                </span>
-                                {product.price > product.discountPrice && (
-                                    <span className="font-sans text-lg sm:text-xl font-semibold text-[#bdbdbd] line-through">
-                                        Rs.{product.price?.toLocaleString()}
-                                    </span>
-                                )}
-                                {product.price > product.discountPrice && (
-                                    <span className="font-sans text-sm font-bold text-[#e53945]">
-                                        -{discountPercentage}%
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Color Selector */}
-                            {product.colors?.length > 0 && (
-                                <div className="mb-6 sm:mb-8">
-                                    <p className="font-sans text-sm font-semibold mb-3 text-[#0f0f0f]">
-                                        Color: <span className="font-normal text-[#7a7a7a]">{product.colors.find(c => c.hex === selectedColor)?.name}</span>
-                                    </p>
-                                    <div className="flex flex-wrap gap-2.5 sm:gap-3">
-                                        {product.colors.map(color => (
-                                            <button
-                                                key={color._id}
-                                                onClick={() => setSelectedColor(color.hex)}
-                                                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-white transition outline ${selectedColor === color.hex ? "outline-2 outline-[#0f0f0f]" : "outline-1 outline-[#e5e5e5] hover:outline-gray-400"}`}
-                                                style={{ background: color.hex }}
-                                                title={color.name}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Stock Indicator */}
-                            <div className="mb-6 sm:mb-8">
-                                <p className="font-sans text-sm font-bold italic text-[#e53945] mb-2">
-                                    {product.stock > 0 ? `${Math.min(product.stock, 18)} in stock` : "Out of stock"}
-                                </p>
-                                <div className="h-1 bg-[#e0e0e0] w-full rounded overflow-hidden">
-                                    <div className={`h-full bg-[#4CAF50] ${product.stock > 0 ? "w-[70%]" : "w-0"}`} />
-                                </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8">
-                                <button
-                                    onClick={() => addToCart(product._id, false)}
-                                    disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
-                                    className="w-full py-3.5 sm:py-4 rounded-lg bg-[#0f0f0f] text-white font-sans text-sm sm:text-base font-bold transition hover:bg-[#1a1a1a] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isAddingToCart ? "Adding..." : "Add To Cart"}
-                                </button>
-
-                                <button
-                                    onClick={() => addToCart(product._id, true)}
-                                    disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
-                                    className="w-full py-3.5 sm:py-4 rounded-lg bg-gradient-to-b from-[#f5f5f5] to-[#e0e0e0] text-[#0f0f0f] font-sans text-sm sm:text-base font-bold border border-[#d4d4d4] transition hover:from-[#ebebeb] hover:to-[#d5d5d5] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isBuyingNow ? "Processing..." : "Buy It Now"}
-                                </button>
-                            </div>
-
-                            {/* Pitch copy */}
-                            <p className="font-sans text-xs sm:text-sm text-[#0f0f0f] leading-6 mb-4 sm:mb-6">
-                                The simplicity paradox — do less, deliver more. {product.tagline} Perfects the user flow and integrates seamlessly into your daily carry.
-                            </p>
-
-                            <a href="#product-details" className="font-sans text-sm text-[#0f0f0f] underline font-semibold">
-                                Show More
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="product-details" className="py-6 md:py-10" />
-
-            {/* ── Bottom Content Area ── */}
-            <div className="max-w-[1080px] mx-auto px-4 sm:px-6 lg:px-[clamp(20px,4vw,40px)]">
-
-                {/* Features & Specs */}
-                <div className="bg-white rounded-2xl p-6 sm:p-8 lg:p-10 mb-10 sm:mb-14 border border-[#e5e5e5]">
-                    <h2 className="font-serif text-2xl sm:text-[1.8rem] font-bold mb-4 sm:mb-6 text-[#0f0f0f]">Features & Specs</h2>
-                    <p className="font-sans text-sm sm:text-base leading-7 text-[#7a7a7a] mb-6 sm:mb-8">
-                        {product.description}
-                    </p>
-
-                    {product.technicalSpecs && Object.keys(product.technicalSpecs).length > 0 && (
-                        <div className="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-[#e5e5e5] pt-6 sm:pt-8">
-                            {Object.entries(product.technicalSpecs).map(([key, value]) => (
-                                <div key={key}>
-                                    <p className="font-sans text-xs font-bold text-[#0f0f0f] capitalize mb-1">
-                                        {key.replace(/([A-Z])/g, ' $1')}
-                                    </p>
-                                    <p className="font-sans text-sm text-[#7a7a7a]">{value}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Reviews */}
-                <Reviews selectedProduct={product.name} />
-            </div>
-
-            {/* ── Full Screen Image Modal ── */}
-            <AnimatePresence>
-                {isFullScreenImage && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-white/95 z-[1000] flex items-center justify-center p-6 sm:p-10"
-                        onClick={() => setIsFullScreenImage(false)}
-                    >
-                        <button
-                            className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-white border border-[#e5e5e5] p-2.5 sm:p-3 rounded-full text-[#0f0f0f] shadow-sm z-10 active:scale-95 transition"
-                            onClick={() => setIsFullScreenImage(false)}
-                        >
-                            <FaTimes size={16} />
-                        </button>
-
-                        {/* Prev/Next in fullscreen */}
-                        {currentImages.length > 1 && (
-                            <>
-                                <button
-                                    className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 bg-white border border-[#e5e5e5] p-3 rounded-full text-[#0f0f0f] shadow-sm z-10 active:scale-95 transition"
-                                    onClick={e => { e.stopPropagation(); handlePrevImage(); }}
-                                >
-                                    <FaAngleLeft size={18} />
-                                </button>
-                                <button
-                                    className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 bg-white border border-[#e5e5e5] p-3 rounded-full text-[#0f0f0f] shadow-sm z-10 active:scale-95 transition"
-                                    onClick={e => { e.stopPropagation(); handleNextImage(); }}
-                                >
-                                    <FaAngleRight size={18} />
-                                </button>
-                            </>
-                        )}
-
-                        <motion.img
-                            key={selectedImageIndex}
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.2 }}
-                            src={currentImages[selectedImageIndex]}
-                            alt={product.name}
-                            className="max-w-full max-h-full object-contain"
-                            onClick={e => e.stopPropagation()}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+      <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center p-8">
+        <div className="w-12 h-12 border-3 border-[#9B5A2B] border-t-transparent rounded-full animate-spin" />
+        <p className="mt-4 text-xs uppercase tracking-widest font-bold text-[#8C867C]">
+          Curating Atelier Piece...
+        </p>
+      </div>
     );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-sm font-bold text-[#0D0C0B] uppercase tracking-wider mb-2">
+          {error || "Product Not Found"}
+        </p>
+        <button
+          onClick={() => navigate("/all-products")}
+          className="mt-4 px-6 py-2.5 rounded-xl bg-[#0D0C0B] text-white text-xs font-bold uppercase tracking-wider"
+        >
+          Explore All Goods
+        </button>
+      </div>
+    );
+  }
+
+  const currentColorObj =
+    product.colors?.find((c) => c.hex === selectedColor) ||
+    product.colors?.[0] ||
+    null;
+
+  const currentImages =
+    currentColorObj?.images?.length > 0
+      ? currentColorObj.images
+      : product.img?.length > 0
+      ? product.img
+      : product.images?.length > 0
+      ? product.images
+      : [
+          "https://www.waldorleather.com/cdn/shop/collections/E0127C8F-00FD-4D9A-B501-9DBC77D98CAC.jpg?v=1769830638&width=800",
+        ];
+
+  const hasDiscount = product.price > product.discountPrice;
+  const discountPercent = hasDiscount
+    ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+    : 0;
+
+  const handlePrevImage = () => {
+    setSelectedImageIndex((prev) =>
+      prev > 0 ? prev - 1 : currentImages.length - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setSelectedImageIndex((prev) =>
+      prev < currentImages.length - 1 ? prev + 1 : 0
+    );
+  };
+
+  return (
+    <div className="bg-[#FAF8F5] min-h-screen pt-28 sm:pt-36 pb-28 md:pb-20 text-[#0D0C0B]">
+      {alertProps.visible && (
+        <AlertMessage
+          message={alertProps.message}
+          type={alertProps.type}
+          onClose={handleCloseAlert}
+          duration={3500}
+          showCloseButton
+        />
+      )}
+
+      {/* 2-Click Instant Order Bottom Drawer */}
+      <QuickOrderDrawer
+        isOpen={isQuickOrderOpen}
+        onClose={() => setIsQuickOrderOpen(false)}
+        product={product}
+        selectedColorHex={selectedColor}
+      />
+
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+        {/* Breadcrumbs */}
+        <div className="text-xs text-[#8C867C] font-semibold uppercase tracking-wider mb-6 flex items-center gap-2">
+          <span
+            onClick={() => navigate("/")}
+            className="hover:text-[#0D0C0B] cursor-pointer"
+          >
+            Atelier
+          </span>
+          <span>/</span>
+          <span
+            onClick={() => navigate(`/products/${product.category || "all"}`)}
+            className="hover:text-[#0D0C0B] cursor-pointer"
+          >
+            {product.category || "Leather Goods"}
+          </span>
+          <span>/</span>
+          <span className="text-[#0D0C0B] truncate max-w-[200px]">
+            {product.name}
+          </span>
+        </div>
+
+        {/* Main Grid: Gallery on left, Info on right */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-8 lg:gap-14 items-start">
+          {/* ── Left: Image Gallery ── */}
+          <div className="flex flex-col gap-4">
+            {/* Main Stage Image */}
+            <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-white border border-[#E8E2D6] p-6 sm:p-10 flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+              {/* Badges */}
+              <div className="absolute top-5 left-5 z-10 flex flex-col gap-2">
+                {hasDiscount && discountPercent > 0 && (
+                  <span className="text-[11px] font-bold uppercase tracking-wider bg-[#9B5A2B] text-white px-3 py-1 rounded-full shadow-sm">
+                    Save {discountPercent}%
+                  </span>
+                )}
+                <span className="text-[10px] font-bold uppercase tracking-widest bg-[#0D0C0B] text-white px-3 py-1 rounded-full">
+                  100% Full-Grain
+                </span>
+              </div>
+
+              {/* Fullscreen Button */}
+              <button
+                type="button"
+                onClick={() => setIsFullScreenImage(true)}
+                className="absolute top-5 right-5 p-2.5 rounded-full bg-white/90 border border-[#E3DDCF] shadow-sm text-[#0D0C0B] hover:bg-white transition cursor-pointer"
+                aria-label="View Fullscreen"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+
+              {/* Navigation Arrows for Mobile & Desktop */}
+              {currentImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/90 border border-[#E3DDCF] shadow-md text-[#0D0C0B] hover:bg-white active:scale-95 transition cursor-pointer"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/90 border border-[#E3DDCF] shadow-md text-[#0D0C0B] hover:bg-white active:scale-95 transition cursor-pointer"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Main Animated Photo */}
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={`${selectedColor}-${selectedImageIndex}`}
+                  src={currentImages[selectedImageIndex]}
+                  alt={product.name}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.25 }}
+                  className="w-full h-full object-contain mix-blend-multiply"
+                />
+              </AnimatePresence>
+            </div>
+
+            {/* Thumbnail Strip */}
+            {currentImages.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+                {currentImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(idx)}
+                    className={`relative w-20 h-20 rounded-2xl overflow-hidden bg-white p-1.5 border transition-all shrink-0 cursor-pointer ${
+                      selectedImageIndex === idx
+                        ? "border-[#0D0C0B] ring-2 ring-[#0D0C0B]/20 scale-105"
+                        : "border-[#E8E2D6] opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`Thumbnail ${idx}`}
+                      className="w-full h-full object-contain mix-blend-multiply"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Right: Product Details & Actions ── */}
+          <div className="flex flex-col gap-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E8E2D6] shadow-[0_4px_24px_rgba(0,0,0,0.03)] flex flex-col gap-6">
+              {/* Rating & Stock */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex text-amber-500">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                  <span className="text-xs font-bold text-[#0D0C0B]">4.9</span>
+                  <span className="text-xs text-[#8C867C]">(48 reviews)</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                  <span>In Stock · Ready to Dispatch</span>
+                </div>
+              </div>
+
+              {/* Title & Tagline */}
+              <div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0D0C0B] tracking-tight leading-tight font-[var(--font-display)]">
+                  {product.name}
+                </h1>
+                {product.tagline && (
+                  <p className="text-sm text-[#736E66] mt-2 font-normal">
+                    {product.tagline}
+                  </p>
+                )}
+              </div>
+
+              {/* Pricing Box */}
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D6] flex items-baseline justify-between">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-[#0D0C0B]">
+                    Rs.{" "}
+                    {(
+                      product.discountPrice || product.price
+                    )?.toLocaleString()}
+                  </span>
+                  {hasDiscount && (
+                    <span className="text-sm sm:text-base text-[#A39D93] line-through font-medium">
+                      Rs. {product.price?.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#9B5A2B]">
+                  Free Delivery Across Pakistan
+                </span>
+              </div>
+
+              {/* Color Swatch Selector */}
+              {product.colors?.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-2.5">
+                    <span className="text-[#736E66]">
+                      Selected Tone:{" "}
+                      <span className="text-[#0D0C0B]">
+                        {currentColorObj?.name || "Natural Leather"}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    {product.colors.map((color) => {
+                      const isSelected = selectedColor === color.hex;
+                      return (
+                        <button
+                          key={color._id || color.hex}
+                          type="button"
+                          onClick={() => setSelectedColor(color.hex)}
+                          className={`w-9 h-9 rounded-full transition-all cursor-pointer relative flex items-center justify-center ${
+                            isSelected
+                              ? "ring-2 ring-offset-2 ring-[#0D0C0B] ring-offset-white scale-110"
+                              : "opacity-80 hover:opacity-100 hover:scale-105"
+                          }`}
+                          style={{ backgroundColor: color.hex }}
+                          title={color.name}
+                        >
+                          {isSelected && (
+                            <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Desktop Direct CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                {/* 2-Click COD Instant Buy */}
+                <button
+                  type="button"
+                  onClick={() => setIsQuickOrderOpen(true)}
+                  className="flex-1 py-4 px-6 rounded-2xl bg-[#0D0C0B] text-white font-bold text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-2.5 hover:bg-[#2A2621] transition active:scale-[0.98] cursor-pointer"
+                >
+                  <Zap className="w-4 h-4 text-[#D8AF72] fill-[#D8AF72]" />
+                  <span>Instant 2-Click Order (COD)</span>
+                </button>
+
+                {/* Add To Cart */}
+                <button
+                  type="button"
+                  onClick={() => addToCart(product._id, false)}
+                  disabled={isAddingToCart}
+                  className={`py-4 px-6 rounded-2xl border font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
+                    addedSuccess
+                      ? "bg-emerald-600 text-white border-emerald-600"
+                      : "bg-[#FAF8F5] text-[#0D0C0B] border-[#E3DDCF] hover:bg-[#EFECE5]"
+                  }`}
+                >
+                  {addedSuccess ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Added!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>{isAddingToCart ? "Adding..." : "Add to Cart"}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Atelier Hallmark Pills */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-[#F0EBE1]">
+                <div className="flex items-center gap-2 text-xs text-[#524D45]">
+                  <Truck className="w-4 h-4 text-[#9B5A2B] shrink-0" />
+                  <span>Open Parcel Delivery</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#524D45]">
+                  <ShieldCheck className="w-4 h-4 text-[#9B5A2B] shrink-0" />
+                  <span>10-Year Warranty</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#524D45]">
+                  <RotateCcw className="w-4 h-4 text-[#9B5A2B] shrink-0" />
+                  <span>7-Day Return Guarantee</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Product Specifications & Leather Craft Accordion */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E8E2D6] shadow-[0_4px_24px_rgba(0,0,0,0.03)] flex flex-col gap-4">
+              <h3 className="text-lg font-bold text-[#0D0C0B] font-[var(--font-display)]">
+                Craftsmanship & Specs
+              </h3>
+              <p className="text-sm text-[#736E66] leading-relaxed">
+                {product.description ||
+                  "Handcrafted from thick, vegetable-tanned full-grain cowhide that breathes and develops a deep, rich patina with every journey. Stitched with bonded nylon thread and edges hand-finished with natural carnauba beeswax."}
+              </p>
+
+              {product.technicalSpecs && (
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#F0EBE1] text-xs">
+                  {Object.entries(product.technicalSpecs).map(([key, val]) => (
+                    <div key={key}>
+                      <span className="font-bold text-[#0D0C0B] capitalize block">
+                        {key.replace(/([A-Z])/g, " $1")}
+                      </span>
+                      <span className="text-[#736E66]">{val}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-16">
+          <Reviews selectedProduct={product.name} />
+        </div>
+      </div>
+
+      {/* ── MOBILE STICKY BOTTOM ACTION BAR (Thumb Friendly) ── */}
+      <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-[#E8E2D6] px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <span className="text-[10px] uppercase font-bold text-[#8C867C] block leading-none">
+              Cash on Delivery
+            </span>
+            <span className="text-lg font-extrabold text-[#0D0C0B] leading-tight">
+              Rs. {(product.discountPrice || product.price)?.toLocaleString()}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => addToCart(product._id, false)}
+              className="p-3 rounded-xl bg-[#FAF8F5] border border-[#E3DDCF] text-[#0D0C0B] active:scale-95"
+              aria-label="Add to cart"
+            >
+              <ShoppingBag className="w-5 h-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsQuickOrderOpen(true)}
+              className="py-3 px-5 rounded-xl bg-[#0D0C0B] text-white text-xs font-bold uppercase tracking-wider shadow-lg flex items-center gap-1.5 active:scale-95 cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5 text-[#D8AF72] fill-[#D8AF72]" />
+              <span>Instant Buy (COD)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Fullscreen Lightbox Modal ── */}
+      <AnimatePresence>
+        {isFullScreenImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-md"
+            onClick={() => setIsFullScreenImage(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setIsFullScreenImage(false)}
+              className="absolute top-5 right-5 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img
+              src={currentImages[selectedImageIndex]}
+              alt={product.name}
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 };
 
 export default ProductDisplay;
