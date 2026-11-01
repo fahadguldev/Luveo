@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import {
@@ -11,14 +12,16 @@ import {
     VolumeX,
     Eye,
     Trash2,
-    Package
+    Package,
+    LogOut
 } from 'lucide-react';
 import AdminBackLink from './AdminBackLink';
-import { getAuthHeaders } from '../lib/auth.js';
+import { getAuthHeaders, logoutUser } from '../lib/auth.js';
 
 const NOTIFICATION_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
 const AdminOrdersPage = () => {
+    const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -283,6 +286,16 @@ const AdminOrdersPage = () => {
                             title="Toggle audio alert"
                         >
                             {audioMuted ? <VolumeX className="w-4 h-4 text-stone-400" /> : <Volume2 className="w-4 h-4 text-[#9B5A2B]" />}
+                        </button>
+
+                        <button
+                            onClick={() => logoutUser(navigate)}
+                            type="button"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-600 hover:text-white transition text-xs font-semibold shadow-sm cursor-pointer"
+                            title="Sign out of Admin session"
+                        >
+                            <LogOut className="w-3.5 h-3.5" />
+                            <span>Sign Out</span>
                         </button>
                     </div>
                 </div>

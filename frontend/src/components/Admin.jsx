@@ -19,7 +19,7 @@ import {
     Sparkles,
     ShieldCheck
 } from 'lucide-react';
-import { getAuthHeaders } from '../lib/auth.js';
+import { getAuthHeaders, logoutUser } from '../lib/auth.js';
 
 const Admin = () => {
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -152,18 +152,7 @@ const Admin = () => {
     }, [fetchData]);
 
     const handleLogout = async () => {
-        try {
-            await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/user/logout`,
-                {},
-                { withCredentials: true }
-            );
-        } catch {
-            // continue logout
-        }
-        localStorage.clear();
-        window.dispatchEvent(new Event('auth-change'));
-        navigate('/login');
+        await logoutUser(navigate);
     };
 
     const stats = [
@@ -353,12 +342,29 @@ const Admin = () => {
                             </p>
                         </div>
 
-                        {error && (
-                            <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl">
-                                {error}
-                            </div>
-                        )}
+                        <div className="flex items-center gap-2 self-start sm:self-center">
+                            <button
+                                onClick={handleLogout}
+                                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-600 hover:text-white rounded-xl transition cursor-pointer shadow-sm"
+                                title="Sign out of Admin session"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span>Sign Out</span>
+                            </button>
+                        </div>
                     </div>
+
+                    {error && (
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 px-4 py-2.5 rounded-xl mb-6 shadow-sm">
+                            <span>{error}</span>
+                            <button
+                                onClick={handleLogout}
+                                className="px-3 py-1 bg-rose-600 text-white rounded-lg font-semibold hover:bg-rose-700 transition cursor-pointer self-start sm:self-auto text-xs"
+                            >
+                                Log In Again
+                            </button>
+                        </div>
+                    )}
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">

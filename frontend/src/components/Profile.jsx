@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { logoutUser } from "../lib/auth.js";
 import {
     ShoppingBag,
     Package,
@@ -179,18 +180,7 @@ const UserProfile = () => {
     }, [userData, fetchOrder]);
 
     const handleLogout = async () => {
-        try {
-            await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/user/logout`,
-                {},
-                { withCredentials: true }
-            );
-        } catch {
-            // Proceed with local logout regardless of network
-        }
-        localStorage.clear();
-        window.dispatchEvent(new Event("auth-change"));
-        navigate("/login");
+        await logoutUser(navigate);
     };
 
     const removeFromCart = async (productId) => {
@@ -214,7 +204,7 @@ const UserProfile = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#FBF9F5] flex items-center justify-center px-4">
+            <div className="min-h-screen bg-[#FBF9F5] flex items-center justify-center px-4 pt-28 sm:pt-36 pb-20">
                 <div className="text-center">
                     <Loader2 className="w-10 h-10 text-[#9B5A2B] animate-spin mx-auto mb-4" />
                     <p className="font-serif text-lg text-stone-700">Accessing Atelier Client Vault...</p>
@@ -225,7 +215,7 @@ const UserProfile = () => {
 
     if (error && !userData) {
         return (
-            <div className="min-h-screen bg-[#FBF9F5] flex items-center justify-center px-4 py-16">
+            <div className="min-h-screen bg-[#FBF9F5] flex items-center justify-center px-4 pt-28 sm:pt-36 pb-20">
                 <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-stone-200 text-center shadow-xl">
                     <div className="w-16 h-16 rounded-full bg-amber-50 text-[#9B5A2B] flex items-center justify-center mx-auto mb-4">
                         <Sparkles className="w-8 h-8" />
@@ -244,7 +234,7 @@ const UserProfile = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#FBF9F5] text-stone-900 py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#FBF9F5] text-stone-900 pt-28 sm:pt-36 pb-20 px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto space-y-6">
                 {/* Atelier Client Profile Banner */}
                 <div className="relative rounded-3xl bg-gradient-to-br from-[#0D0C0B] via-[#1A1815] to-[#2B231C] text-white p-6 sm:p-10 shadow-2xl overflow-hidden border border-amber-950/40">

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, ShoppingBag, Menu, X, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, X, ArrowRight, ShieldCheck, Sparkles, LogOut } from "lucide-react";
+import { getAuthToken, logoutUser } from "../lib/auth.js";
 
 const NAV_LINKS = [
   { label: "MagFlap™ Wallets", path: "/products/magnetic-wallet" },
@@ -26,6 +27,20 @@ export const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [announcementIdx, setAnnouncementIdx] = useState(0);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getAuthToken()));
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setIsLoggedIn(Boolean(getAuthToken()));
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+    window.addEventListener("storage", handleAuthChange);
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+      window.removeEventListener("storage", handleAuthChange);
+    };
+  }, []);
 
   // Redux cart count
   const cartItems = useSelector((state) => state.cart?.items || []);
@@ -154,6 +169,19 @@ export const Navbar = () => {
               <User className="w-5 h-5" />
             </Link>
 
+            {/* Logout when authenticated */}
+            {isLoggedIn && (
+              <button
+                type="button"
+                onClick={() => logoutUser(navigate)}
+                className="p-2 text-[#0D0C0B] hover:text-rose-600 transition rounded-full hover:bg-black/5 cursor-pointer"
+                title="Sign Out"
+                aria-label="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            )}
+
             {/* Cart Link with Badge */}
             <Link
               to="/checkout"
@@ -263,8 +291,31 @@ export const Navbar = () => {
                 </nav>
               </div>
 
-              {/* Bottom Guarantee Badge */}
-              <div className="pt-6 border-t border-[#E8E2D6]">
+              {/* Bottom Actions & Guarantee Badge */}
+              <div className="pt-6 border-t border-[#E8E2D6] space-y-4">
+                {isLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      logoutUser(navigate);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-[#0D0C0B] bg-white border border-[#E8E2D6] rounded-lg hover:bg-black/5 transition-colors cursor-pointer"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Sign In</span>
+                  </Link>
+                )}
+
                 <div className="flex items-center gap-3 text-xs text-[#6B655C]">
                   <ShieldCheck className="w-4 h-4 text-[#9B5A2B]" />
                   <span>100% Certified Full-Grain Cowhide</span>

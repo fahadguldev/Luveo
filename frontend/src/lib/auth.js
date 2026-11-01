@@ -34,3 +34,23 @@ export const clearAuth = () => {
     localStorage.removeItem('user');
     window.dispatchEvent(new Event('auth-change'));
 };
+
+export const logoutUser = async (navigate = null) => {
+    try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
+        if (backendUrl) {
+            await fetch(`${backendUrl}/user/logout`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                credentials: 'include'
+            }).catch(() => {});
+        }
+    } catch (err) {
+        console.error('Error during backend logout:', err);
+    } finally {
+        clearAuth();
+        if (typeof navigate === 'function') {
+            navigate('/login');
+        }
+    }
+};

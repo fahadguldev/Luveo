@@ -9,9 +9,20 @@ import bcrypt from 'bcryptjs';
 import { isDbConnected } from '../config/db.js';
 
 import { addProduct, editProduct, deleteProduct } from '../controller/admin.product.controller.js';
+import { seedDatabase } from '../scripts/seed.js';
 
 const router = express.Router();
 cloudinaryConnect();
+
+router.post('/seed-dummy-data', async (req, res) => {
+    try {
+        const result = await seedDatabase();
+        res.status(200).json({ message: "Dummy data seeded successfully", result });
+    } catch (error) {
+        console.error("Error seeding dummy data:", error);
+        res.status(500).json({ message: "Failed to seed dummy data", error: error.message });
+    }
+});
 
 router.post('/add-product', verifyAdmin, upload.any(), addProduct);
 router.put('/edit-product/:id', verifyAdmin, upload.any(), editProduct);
