@@ -1,10 +1,12 @@
 import { Navigate } from 'react-router-dom';
-import { getCurrentUser } from '../lib/auth.js';
+import { getCurrentUser, getAuthToken } from '../lib/auth.js';
 
 const ProtectedRoute = ({ children, role, requiredRole }) => {
     const currentRole = role || getCurrentUser()?.role || null;
-    if (!currentRole || currentRole !== requiredRole) {
-        return <Navigate to="/" replace />;
+    const token = getAuthToken();
+
+    if (!currentRole || currentRole !== requiredRole || !token) {
+        return <Navigate to="/login" replace />;
     }
     return children;
 };

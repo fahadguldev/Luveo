@@ -1,10 +1,16 @@
 export const getAuthToken = () => {
     const directToken = localStorage.getItem('token');
-    if (directToken) return directToken;
+    if (directToken) {
+        return directToken.trim().replace(/^Bearer\s+/i, '') || null;
+    }
 
     try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        return user?.token || null;
+        const userToken = user?.token;
+        if (userToken) {
+            return String(userToken).trim().replace(/^Bearer\s+/i, '') || null;
+        }
+        return null;
     } catch {
         return null;
     }

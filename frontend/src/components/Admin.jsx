@@ -68,6 +68,8 @@ const Admin = () => {
         setIsLoading(true);
         setError(null);
 
+        let hasAuthError = false;
+
         const safeFetch = async (url, fallback) => {
             try {
                 const res = await fetch(url, {
@@ -77,6 +79,9 @@ const Admin = () => {
                     credentials: 'include'
                 });
                 if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        hasAuthError = true;
+                    }
                     return fallback;
                 }
                 const data = await res.json().catch(() => fallback);
@@ -94,6 +99,10 @@ const Admin = () => {
                 safeFetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/total-revenue`, { totalRevenue: 0 }),
                 safeFetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`, { orders: [] })
             ]);
+
+            if (hasAuthError) {
+                setError('Admin session expired or unauthorized. Please log in again to view metrics.');
+            }
 
             const orders = ordersData?.orders || [];
             let pending = 0, packing = 0, shipped = 0, delievered = 0;
