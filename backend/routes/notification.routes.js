@@ -1,6 +1,7 @@
 import express from 'express';
 import Notification from '../models/notification.model.js';
 import verifyAdmin from '../middleware/verifyAdmin.js';
+import { isDbConnected } from '../config/db.js';
 
 const router = express.Router();
 
@@ -10,6 +11,10 @@ router.post('/add-notification', verifyAdmin, async (req, res) => {
 
     if (!message) {
         return res.status(400).json({ error: 'Message is required' });
+    }
+
+    if (!isDbConnected()) {
+        return res.status(503).json({ error: 'Database connection unavailable' });
     }
 
     try {
@@ -27,18 +32,25 @@ router.post('/add-notification', verifyAdmin, async (req, res) => {
 // ✅ Get the current notification (Public)
 router.get('/notification', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.status(200).json(null);
+        }
         const notification = await Notification.findById('singleton');
         if (!notification) {
             return res.status(200).json(null);
         }
         res.status(200).json(notification);
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(200).json(null);
     }
 });
 
 // ✅ Delete the current notification - Admin only
 router.delete('/delete-notification', verifyAdmin, async (req, res) => {
+    if (!isDbConnected()) {
+        return res.status(503).json({ error: 'Database connection unavailable' });
+    }
+
     try {
         await Notification.findByIdAndDelete('singleton');
         res.status(204).send(); // No Content
