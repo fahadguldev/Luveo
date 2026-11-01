@@ -7,6 +7,7 @@
     "start": "nodemon index.js",
     "seed": "node scripts/seed.js",
     "db:test": "node scripts/testDb.js",
+    "create-admin": "node scripts/createAdmin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
