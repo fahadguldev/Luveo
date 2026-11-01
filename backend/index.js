@@ -71,10 +71,23 @@ io.on('connection', (socket) => {
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
-// Connect to database and services
-connectDB();
+// Connect to services
 cloudinaryConnect();
-initOrderChangeStream(io);
+if (!process.env.VERCEL) {
+    initOrderChangeStream(io);
+}
+
+// Ensure database connection is active before processing any requests (critical for serverless cold-starts)
+app.use(async (req, res, next) => {
+    try {
+        if (!isDbConnected()) {
+            await connectDB();
+        }
+    } catch (err) {
+        console.error("Database connection middleware error:", err.message);
+    }
+    next();
+});
 
 // Use express.json() for all non-webhook routes
 app.use((req, res, next) => {
@@ -160,11 +173,13 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server
+// Start server (only in standalone Node environments, not in Vercel serverless)
 const port = process.env.PORT || process.env.LOCALHOST || 5000;
-server.listen(port, () => {
-    console.log(`✅ Backend server running on port: ${port}`);
-});
+if (!process.env.VERCEL) {
+    server.listen(port, () => {
+        console.log(`✅ Backend server running on port: ${port}`);
+    });
+}
 
 // Graceful cleanup on shutdown
 const handleGracefulShutdown = async () => {

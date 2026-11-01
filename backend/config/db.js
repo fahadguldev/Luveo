@@ -29,9 +29,9 @@ export const connectDB = async () => {
 
     if (!cached.promise) {
         const opts = {
-            maxPoolSize: 15, // Keeps connection pool well below MongoDB Atlas M0 (500 limit)
-            minPoolSize: 2,
-            serverSelectionTimeoutMS: 5000, // Timeout fast after 5s instead of hanging
+            maxPoolSize: 10, // Keeps connection pool well below MongoDB Atlas M0 (500 limit)
+            minPoolSize: 0, // Do not maintain idle sockets in serverless
+            serverSelectionTimeoutMS: 30000, // Timeout after 30s instead of 5s to allow serverless cold starts
             socketTimeoutMS: 45000,
             bufferCommands: false,
         };
