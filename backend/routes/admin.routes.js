@@ -1,5 +1,3 @@
-
-
 import express from 'express';
 import mongoose from 'mongoose';
 import { cloudinaryConnect } from '../config/cloudinary.js';
@@ -7,7 +5,8 @@ import upload from '../middleware/multer.js';
 import orderModel from '../models/Checkout.model.js';
 import userModel from '../models/user.model.js';
 import verifyAdmin from '../middleware/verifyAdmin.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import { isDbConnected } from '../config/db.js';
 
 import { addProduct, editProduct, deleteProduct } from '../controller/admin.product.controller.js';
 
@@ -19,6 +18,9 @@ router.put('/edit-product/:id', verifyAdmin, upload.any(), editProduct);
 router.delete('/delete-product/:id', verifyAdmin, deleteProduct);
 
 router.post('/add-user', verifyAdmin, async (req, res) => {
+    if (!isDbConnected()) {
+        return res.status(503).json({ message: "Database connection unavailable" });
+    }
     try {
         const { name, email, password, role } = req.body;
 
@@ -53,6 +55,9 @@ router.post('/add-user', verifyAdmin, async (req, res) => {
 });
 
 router.post('/delete-user/:id', verifyAdmin, async (req, res) => {
+    if (!isDbConnected()) {
+        return res.status(503).json({ message: "Database connection unavailable" });
+    }
     const userId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ message: "Invalid user ID format" });
@@ -70,6 +75,9 @@ router.post('/delete-user/:id', verifyAdmin, async (req, res) => {
 });
 
 router.delete('/cancel-order/:id', verifyAdmin, async (req, res) => {
+    if (!isDbConnected()) {
+        return res.status(503).json({ message: "Database connection unavailable" });
+    }
     const orderId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
         return res.status(400).json({ message: "Invalid order ID format" });

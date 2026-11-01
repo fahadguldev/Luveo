@@ -4,11 +4,12 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import mongoose from 'mongoose';
 
 // Load environment variables first
 dotenv.config();
 
-import { connectDB } from './config/db.js';
+import { connectDB, isDbConnected } from './config/db.js';
 import userRoutes from './routes/user.routes.js';
 import productRoutes from './routes/product.routes.js';
 import adminRoutes from './routes/admin.routes.js';
@@ -84,9 +85,16 @@ app.use((req, res, next) => {
     }
 });
 
-// Basic routes
+// Basic routes & Health check
 app.get('/test', (req, res) => {
-    res.send("Test route is working");
+    res.json({
+        message: "Luveo API is active",
+        database: {
+            connected: isDbConnected(),
+            readyState: mongoose.connection.readyState,
+            status: ["disconnected", "connected", "connecting", "disconnecting"][mongoose.connection.readyState] || "unknown"
+        }
+    });
 });
 
 app.get('/', (req, res) => {
@@ -102,19 +110,28 @@ app.use('/analytics', AnalyticsRoutes);
 app.use('/checkout', CheckoutRoutes);
 app.use('/notification', notificationRoutes);
 
-
 // Global visit counter routes
 app.get('/globalVisitCount', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.status(200).json({ message: { globalVisitCount: 0 } });
+        }
         const countDoc = await VisitCounter.findOne({});
         res.status(200).json({ message: countDoc || { globalVisitCount: 0 } });
-    } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
+    } catch {
+        res.status(200).json({ message: { globalVisitCount: 0 } });
     }
 });
 
 app.put('/updateGlobalVisitCount', async (req, res) => {
     try {
+        if (!isDbConnected()) {
+            return res.status(200).json({
+                visitorCount: 0,
+                lastUpdated: new Date(),
+                databaseConnected: false
+            });
+        }
         const updated = await VisitCounter.findOneAndUpdate(
             {},
             {
@@ -129,8 +146,8 @@ app.put('/updateGlobalVisitCount', async (req, res) => {
             lastUpdated: updated.lastUpdated,
         });
     } catch (err) {
-        console.error("Error updating visit count:", err);
-        res.status(500).json({ error: 'Error updating visit count' });
+        console.error("Error updating visit count:", err.message);
+        res.status(200).json({ visitorCount: 0, lastUpdated: new Date() });
     }
 });
 
